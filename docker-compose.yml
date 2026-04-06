@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: fashion_store
+      MYSQL_USER: fashion_user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports: ['3306:3306']
+    volumes: ['mysql_data:/var/lib/mysql']
+
+  backend:
+    build: ./backend
+    ports: ['8000:8000']
+    depends_on: [mysql]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: fashion_store
+      DB_USERNAME: fashion_user
+      DB_PASSWORD: secret
+
+  frontend:
+    build: ./frontend
+    ports: ['3000:3000']
+    environment:
+      VITE_API_URL: http://backend:8000/api
+
+volumes:
+  mysql_data:
