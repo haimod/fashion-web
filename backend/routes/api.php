@@ -14,3 +14,5 @@ Route::prefix('admin')->middleware(['auth:sanctum','role:admin'])->group(base_pa
 
 // URL thực tế sẽ là: POST http://localhost:8000/api/auth/login
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/register', [AuthController::class, 'register']); // Thêm dòng này

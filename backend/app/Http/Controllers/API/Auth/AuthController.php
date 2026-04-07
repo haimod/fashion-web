@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Str;
 class AuthController extends Controller
 {
     /**
@@ -56,5 +56,51 @@ class AuthController extends Controller
                 'token' => $token // Frontend sẽ lưu token này lại
             ]
         ], 200); // 200 là mã "OK"
+    }
+
+    public function register(Request $request)
+    {
+        // 1. Kiểm tra (Validate) dữ liệu
+        $request->validate([
+            'tenkh' => 'required|string|max:100',
+            // unique:KHACHHANG,email nghĩa là email không được trùng trong bảng KHACHHANG
+            'email' => 'required|email|unique:KHACHHANG,email|max:100',
+            'sodt'  => 'required|string|unique:KHACHHANG,sodt|max:10',
+            'matkhau' => 'required|string|min:6',
+        ], [
+            // Tùy chỉnh câu thông báo lỗi cho thân thiện
+            'email.unique' => 'Email này đã được sử dụng.',
+            'sodt.unique' => 'Số điện thoại này đã được sử dụng.',
+            'matkhau.min' => 'Mật khẩu phải có ít nhất 6 ký tự.'
+        ]);
+
+        // 2. Tạo Mã Khách Hàng (ma_kh) tự động
+        // Vì cột ma_kh của bạn là VARCHAR(20) và không tự tăng, ta cần tự sinh mã.
+        // Ví dụ: KH + timestamp (vd: KH1712456789)
+        $maKh = 'KH' . time() . rand(10, 99); 
+
+        // 3. Tạo record mới trong Database
+        $customer = Customer::create([
+            'ma_kh' => $maKh,
+            'tenkh' => $request->tenkh,
+            'email' => $request->email,
+            'sodt'  => $request->sodt,
+            // BẮT BUỘC phải băm (hash) mật khẩu trước khi lưu
+            'matkhau' => Hash::make($request->matkhau), 
+            'trang_thai' => 1, // 1 là tài khoản đang hoạt động
+        ]);
+
+        // 4. (Tùy chọn) Đăng nhập luôn cho user sau khi đăng ký thành công
+        $token = $customer->createToken('CustomerAccessToken')->plainTextToken;
+
+        // 5. Trả về kết quả
+        return response()->json([
+            'success' => true,
+            'message' => 'Đăng ký tài khoản thành công!',
+            'data' => [
+                'user' => $customer,
+                'token' => $token
+            ]
+        ], 201); // 201 là HTTP status "Created" (Đã tạo thành công)
     }
 }
