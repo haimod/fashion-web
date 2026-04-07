@@ -35,6 +35,7 @@ class Customer extends Authenticatable
         'sodt',
         'matkhau',
         'trang_thai',
+        'role',
     ];
 
     // Các trường cần giấu đi khi trả dữ liệu ra API (Bảo mật)
