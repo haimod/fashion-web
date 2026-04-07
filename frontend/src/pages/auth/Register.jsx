@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux'; // THÊM DÒNG NÀY
+
+// Thêm 2 import này ở đầu file:
+import authService from '../../services/authService';
+import { setCredentials } from '../../store/slices/authSlice';
 
 export default function Register() {
   // Quản lý state cho form
@@ -12,35 +17,35 @@ export default function Register() {
   const [agreed, setAgreed] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // THÊM DÒNG NÀY ĐỂ CÓ THỂ LƯU DATA VÀO REDUX
+ const handleRegister = async (e) => {
+  e.preventDefault();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  if (!agreed) return toast.warning("Bạn cần đồng ý với Điều khoản & Điều kiện.");
+  if (password !== confirmPassword) return toast.error("Mật khẩu xác nhận không khớp!");
 
-    // Validate cơ bản ở Frontend
-    if (!agreed) {
-      toast.warning("Bạn cần đồng ý với Điều khoản & Điều kiện.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-
-    // Tạm thời log ra để kiểm tra
-    const registerData = {
-      tenkh: name, // Đặt tên key giống DB để sau này gửi API cho tiện
-      email,
+  try {
+    toast.info("Đang xử lý đăng ký...");
+    const data = await authService.register({
+      tenkh: name,
+      email: email,
       sodt: phone,
       matkhau: password
-    };
-    
-    console.log("Dữ liệu đăng ký:", registerData);
-    toast.info("Đang xử lý đăng ký...");
+    });
 
-    // Gọi API ở đây (chúng ta sẽ làm ở bước sau)
-    // Nếu thành công -> chuyển hướng về Login
-    // navigate('/login');
-  };
+    if (data.success) {
+      toast.success(data.message);
+      // Lưu user & token vào Redux
+      dispatch(setCredentials({ user: data.data.user, token: data.data.token }));
+      // Đăng ký xong, đẩy thẳng về trang chủ (hoặc Dashboard)
+      navigate('/'); 
+    }
+  } catch (error) {
+    // Xử lý lỗi từ Backend trả về (như trùng email, sđt)
+    const errorMsg = error.response?.data?.message || "Đăng ký thất bại, vui lòng thử lại!";
+    toast.error(errorMsg);
+  }
+};
 
   return (
     <main className="min-h-screen flex flex-col md:flex-row bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">

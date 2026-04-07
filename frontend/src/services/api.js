@@ -1,14 +1,15 @@
 import axios from 'axios'
-
+import 'react-toastify/dist/ReactToastify.css'; // THÊM DÒNG NÀY ĐỂ FIX LỖI GIAO DIỆN TOAST
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-  withCredentials: true,
+ // withCredentials: true,
 })
 
 api.interceptors.request.use(cfg => {
   const token = localStorage.getItem('token')
-  if (token) cfg.headers.Authorization = Bearer 
+  // Sửa lại dòng này:
+  if (token) cfg.headers.Authorization = `Bearer ${token}` 
   return cfg
 })
 

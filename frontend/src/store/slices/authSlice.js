@@ -1,9 +1,33 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+const initialState = {
+  user: JSON.parse(localStorage.getItem('user')) || null,
+  token: localStorage.getItem('token') || null,
+  isAuthenticated: !!localStorage.getItem('token'),
+}
+
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {},
-  reducers: {}
+  initialState,
+  reducers: {
+    setCredentials: (state, action) => {
+      const { user, token } = action.payload;
+      state.user = user;
+      state.token = token;
+      state.isAuthenticated = true;
+      // Lưu vào LocalStorage để F5 không bị mất đăng nhập
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    },
+    logout: (state) => {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+  }
 })
 
+export const { setCredentials, logout } = authSlice.actions
 export default authSlice.reducer

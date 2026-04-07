@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
+import authService from '../../services/authService';
+import { setCredentials } from '../../store/slices/authSlice';
+
 export default function Login() {
   const [identity, setIdentity] = useState('');
   const [password, setPassword] = useState('');
@@ -11,16 +14,26 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    // Tạm thời hiển thị log, chúng ta sẽ gọi API Laravel ở bước sau
-    console.log("Đăng nhập với:", { identity, password });
+const handleLogin = async (e) => {
+  e.preventDefault();
+
+  try {
     toast.info("Đang xử lý đăng nhập...");
-    
-    // Giả lập đăng nhập thành công
-    // dispatch(loginSuccess(data));
-    // navigate('/');
-  };
+    const data = await authService.login({
+      identity: identity,
+      password: password
+    });
+
+    if (data.success) {
+      toast.success(data.message);
+      dispatch(setCredentials({ user: data.data.user, token: data.data.token }));
+      navigate('/');
+    }
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || "Đăng nhập thất bại!";
+    toast.error(errorMsg);
+  }
+};
 
   return (
     <main className="relative h-screen w-full flex items-center justify-center p-4 md:p-0 bg-surface text-on-surface overflow-hidden">
