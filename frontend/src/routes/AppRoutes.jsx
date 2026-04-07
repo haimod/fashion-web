@@ -54,7 +54,9 @@ export default function AppRoutes() {
         <Route path='/forgot-password' element={<ForgotPassword />} />
 
         {/* ADMIN */}
-        <Route path='/admin' element={<AdminRoute><AdminLayout /></AdminRoute>}>
+        {/* <Route path='/admin' element={<AdminRoute><AdminLayout /></AdminRoute>}> */}
+        {/* Thành dòng này (tạm thời): */}
+          <Route path='/admin' element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path='products' element={<AdminProducts />} />
           <Route path='orders' element={<AdminOrders />} />

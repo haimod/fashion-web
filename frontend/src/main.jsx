@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { store } from './store'
 import './styles/globals.css'
+import './index.css'; // <--- Thêm dòng này vào
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

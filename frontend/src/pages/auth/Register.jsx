@@ -64,7 +64,7 @@ export default function Register() {
           <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent"></div>
         </div>
         <div className="z-10">
-          <p className="text-[0.65rem] tracking-[0.15rem] uppercase text-on-surface font-bold">THE URBAN CURATOR SERIES / 024</p>
+          <p className="text-[0.65rem] tracking-[0.15rem] uppercase text-on-surface font-bold">THE URBAN CURATOR SERIES / 026</p>
         </div>
       </section>
 
@@ -206,7 +206,7 @@ export default function Register() {
 
         {/* Footer - Simplified for focus */}
         <footer className="w-full bg-surface pt-8 mt-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[0.55rem] tracking-[0.15rem] uppercase text-outline-variant">© 2024 VIBE STUDIO. ALL RIGHTS RESERVED.</p>
+          <p className="text-[0.55rem] tracking-[0.15rem] uppercase text-outline-variant">© 2026 VIBE STUDIO. ALL RIGHTS RESERVED.</p>
           <div className="flex gap-6">
             <span className="text-[0.55rem] tracking-[0.15rem] uppercase text-outline-variant cursor-pointer hover:text-primary">QUYỀN RIÊNG TƯ</span>
             <span className="text-[0.55rem] tracking-[0.15rem] uppercase text-outline-variant cursor-pointer hover:text-primary">ĐIỀU KHOẢN</span>
