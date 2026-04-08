@@ -25,9 +25,8 @@ export default function AdminSidebar() {
           <span>Dashboard</span>
         </Link>
 
-        <Link to="/admin/products" className="flex items-center gap-4 text-[#5F5E5E] dark:text-[#50453B] pl-5 py-3 font-['Be_Vietnam_Pro'] font-medium uppercase tracking-[0.15rem] text-[11px] hover:bg-[#D4A574]/10 dark:hover:bg-[#7C572D]/10 transition-colors duration-200">
-          <span className="material-symbols-outlined">inventory_2</span>
-          <span>Sản phẩm</span>
+       <Link to="/admin/products" className="group flex items-center px-3 py-3 font-['Be_Vietnam_Pro'] uppercase tracking-[0.15rem] text-[0.7rem] font-medium text-[#7C572D] border-l-4 border-[#7C572D] pl-4 translate-x-1 duration-300">
+           <span className="material-symbols-outlined mr-4">apparel</span> Sản phẩm
         </Link>
 
         <Link to="/admin/orders" className="flex items-center gap-4 text-[#5F5E5E] dark:text-[#50453B] pl-5 py-3 font-['Be_Vietnam_Pro'] font-medium uppercase tracking-[0.15rem] text-[11px] hover:bg-[#D4A574]/10 dark:hover:bg-[#7C572D]/10 transition-colors duration-200">

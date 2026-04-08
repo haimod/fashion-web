@@ -6,7 +6,7 @@ import App from './App'
 import { store } from './store'
 import './styles/globals.css'
 import './index.css'; // <--- Thêm dòng này vào
-
+import 'react-toastify/dist/ReactToastify.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>

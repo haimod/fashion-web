@@ -4,7 +4,10 @@ import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
 import PrivateRoute from './PrivateRoute'
 import AdminRoute from './AdminRoute'
-
+import AddProduct from '../pages/admin/AddProduct';
+// Import trang quản lý sản phẩm vào đầu file
+import ProductManagement from '../pages/admin/ProductManagement';
+import EditProduct from '../pages/admin/EditProduct'; // <-- THÊM DÒNG NÀY
 // Client pages (lazy load)
 const Home         = lazy(() => import('../pages/client/Home'))
 const Shop         = lazy(() => import('../pages/client/Shop'))
@@ -58,7 +61,7 @@ export default function AppRoutes() {
         {/* Thành dòng này (tạm thời): */}
           <Route path='/admin' element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path='products' element={<AdminProducts />} />
+          {/* <Route path='products' element={<AdminProducts />} /> */}
           <Route path='orders' element={<AdminOrders />} />
           <Route path='users' element={<AdminUsers />} />
           <Route path='categories' element={<AdminCategories />} />
@@ -66,6 +69,10 @@ export default function AppRoutes() {
           <Route path='collections' element={<AdminCollections />} />
           <Route path='flash-sales' element={<AdminFlashSales />} />
           <Route path='reports' element={<AdminReports />} />
+          <Route path="products" element={<ProductManagement />} />
+         {/* thêm sản phẩm */}
+          <Route path="products/create" element={<AddProduct />} /> 
+          <Route path="products/edit/:id" element={<EditProduct />} /> {/* <-- THÊM DÒNG NÀY */}
         </Route>
 
         <Route path='*' element={<NotFound />} />
