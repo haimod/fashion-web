@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Admin\AdminProductController; // <--- THÊM DÒNG NÀY VÀO ĐÂY
 use App\Http\Controllers\API\Admin\AdminCategoryController; // Thêm lên đầu file
+use App\Http\Controllers\API\Admin\AdminCustomerController; // <-- Nhớ thêm dòng này lên đầu file
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
@@ -22,3 +23,9 @@ Route::get('/admin/categories', [AdminCategoryController::class, 'index']);
 Route::post('/admin/categories', [AdminCategoryController::class, 'store']);
 Route::put('/admin/categories/{id}', [AdminCategoryController::class, 'update']);
 Route::delete('/admin/categories/{id}', [AdminCategoryController::class, 'destroy']);
+
+// --- quản lí khách hàng ---
+Route::get('/admin/customers', [AdminCustomerController::class, 'index']);
+Route::post('/admin/customers', [AdminCustomerController::class, 'store']);
+Route::put('/admin/customers/{id}', [AdminCustomerController::class, 'update']);
+Route::patch('/admin/customers/{id}/toggle-status', [AdminCustomerController::class, 'toggleStatus']);
