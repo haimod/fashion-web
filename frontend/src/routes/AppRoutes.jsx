@@ -4,11 +4,14 @@ import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
 import PrivateRoute from './PrivateRoute'
 import AdminRoute from './AdminRoute'
+
+// --- CÁC PAGE ĐÃ LÀM XONG TRỰC TIẾP ---
 import AddProduct from '../pages/admin/AddProduct';
 import CategoryManagement from '../pages/admin/CategoryManagement';
-// Import trang quản lý sản phẩm vào đầu file
 import ProductManagement from '../pages/admin/ProductManagement';
-import EditProduct from '../pages/admin/EditProduct'; // <-- THÊM DÒNG NÀY
+import EditProduct from '../pages/admin/EditProduct'; 
+import CustomerManagement from '../pages/admin/CustomerManagement'; 
+
 // Client pages (lazy load)
 const Home         = lazy(() => import('../pages/client/Home'))
 const Shop         = lazy(() => import('../pages/client/Shop'))
@@ -25,10 +28,8 @@ const NotFound     = lazy(() => import('../pages/NotFound'))
 
 // Admin pages (lazy load)
 const Dashboard    = lazy(() => import('../pages/admin/Dashboard'))
-const AdminProducts = lazy(() => import('../pages/admin/Products'))
+// ĐÃ XÓA SẠCH CÁC DÒNG IMPORT LỖI (Products, Categories, Users) Ở ĐÂY
 const AdminOrders  = lazy(() => import('../pages/admin/Orders'))
-const AdminUsers   = lazy(() => import('../pages/admin/Users'))
-const AdminCategories = lazy(() => import('../pages/admin/Categories'))
 const AdminVouchers    = lazy(() => import('../pages/admin/Vouchers'))
 const AdminCollections = lazy(() => import('../pages/admin/Collections'))
 const AdminFlashSales  = lazy(() => import('../pages/admin/FlashSales'))
@@ -58,23 +59,22 @@ export default function AppRoutes() {
         <Route path='/forgot-password' element={<ForgotPassword />} />
 
         {/* ADMIN */}
-        {/* <Route path='/admin' element={<AdminRoute><AdminLayout /></AdminRoute>}> */}
-        {/* Thành dòng này (tạm thời): */}
-          <Route path='/admin' element={<AdminLayout />}>
+        <Route path='/admin' element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
-          {/* <Route path='products' element={<AdminProducts />} /> */}
+          
+          {/* CÁC MODULE ĐÃ HOÀN THIỆN */}
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="products/create" element={<AddProduct />} /> 
+          <Route path="products/edit/:id" element={<EditProduct />} />
+          <Route path="categories" element={<CategoryManagement />} />
+          <Route path="users" element={<CustomerManagement />} />
+
+          {/* CÁC MODULE CHƯA LÀM (Lazy Load) */}
           <Route path='orders' element={<AdminOrders />} />
-          <Route path='users' element={<AdminUsers />} />
           <Route path='vouchers' element={<AdminVouchers />} />
           <Route path='collections' element={<AdminCollections />} />
           <Route path='flash-sales' element={<AdminFlashSales />} />
           <Route path='reports' element={<AdminReports />} />
-          <Route path="products" element={<ProductManagement />} />
-         {/* thêm sản phẩm */}
-          <Route path="products/create" element={<AddProduct />} /> 
-          <Route path="products/edit/:id" element={<EditProduct />} /> {/* <-- THÊM DÒNG NÀY */}
-
-          <Route path="categories" element={<CategoryManagement />} />
         </Route>
 
         <Route path='*' element={<NotFound />} />
