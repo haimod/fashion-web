@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify'; 
 
@@ -6,18 +6,39 @@ export default function AddProduct() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     
-    // 1. Khai báo State chuẩn chỉnh (Không bị lặp)
+    // 1. Khai báo State
     const [formData, setFormData] = useState({
         ma_sp: '', 
         ten_sp: '', 
-        ma_dm: 'DM_AOKHOAC', 
+        ma_dm: '', // Khởi tạo rỗng, sẽ được set khi gọi API lấy danh mục
         gia_ban: '', 
         so_luong: '', 
         mo_ta: ''
     });
     const [imageFile, setImageFile] = useState(null); 
+    const [categories, setCategories] = useState([]); // State lưu danh sách danh mục
 
-    // 2. Các hàm xử lý thay đổi Input
+    // 2. Kéo danh sách danh mục từ DB khi trang vừa load
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/admin/categories');
+                const data = await response.json();
+                setCategories(data);
+                
+                // Nếu có danh mục, tự động set cái đầu tiên làm mặc định để Select không bị lỗi
+                if (data.length > 0) {
+                    setFormData(prev => ({ ...prev, ma_dm: data[0].id }));
+                }
+            } catch (error) {
+                console.error('Lỗi tải danh mục', error);
+                toast.error('Lỗi tải danh mục sản phẩm!');
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // 3. Các hàm xử lý thay đổi Input
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -26,12 +47,18 @@ export default function AddProduct() {
         setImageFile(e.target.files[0]);
     };
 
-    // 3. Hàm Submit xịn sò dùng FormData để gửi File
+    // 4. Hàm Submit gửi dữ liệu
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Kiểm tra xem đã có danh mục nào được chọn chưa
+        if (!formData.ma_dm) {
+            toast.warning('Vui lòng chọn danh mục cho sản phẩm!');
+            return;
+        }
+
         setIsLoading(true);
 
-        // Đóng gói dữ liệu thành "Kiện hàng" FormData
         const submitData = new FormData();
         submitData.append('ma_sp', formData.ma_sp);
         submitData.append('ten_sp', formData.ten_sp);
@@ -40,7 +67,6 @@ export default function AddProduct() {
         submitData.append('so_luong', formData.so_luong);
         submitData.append('mo_ta', formData.mo_ta);
         
-        // Nhét file ảnh vào kiện hàng (nếu có chọn)
         if (imageFile) {
             submitData.append('hinh_anh', imageFile);
         }
@@ -50,7 +76,6 @@ export default function AddProduct() {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json'
-                    // LƯU Ý: Tuyệt đối không dùng 'Content-Type': 'application/json' ở đây
                 },
                 body: submitData 
             });
@@ -69,7 +94,6 @@ export default function AddProduct() {
         }
     };
 
-    // 4. Giao diện Form
     return (
         <div className="max-w-4xl">
             <div className="flex items-center gap-4 mb-10">
@@ -84,7 +108,7 @@ export default function AddProduct() {
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
                         <label className="text-[0.65rem] font-bold tracking-[0.2rem] uppercase text-outline">Mã SP (SKU)</label>
-                        <input required name="ma_sp" onChange={handleChange} placeholder="VD: VS-JK-001" className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm" />
+                        <input required name="ma_sp" onChange={handleChange} placeholder="VD: VS-JK-001" className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm uppercase" />
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -94,9 +118,21 @@ export default function AddProduct() {
 
                     <div className="flex flex-col gap-2">
                         <label className="text-[0.65rem] font-bold tracking-[0.2rem] uppercase text-outline">Danh Mục</label>
-                        <select required name="ma_dm" onChange={handleChange} className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm">
-                            <option value="DM_AOKHOAC">Áo Khoác</option>
-                            <option value="DM_QUAN">Quần Urban</option>
+                        <select 
+                            required 
+                            name="ma_dm" 
+                            value={formData.ma_dm} 
+                            onChange={handleChange} 
+                            className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm cursor-pointer"
+                        >
+                            {/* Render danh sách danh mục từ DB */}
+                            {categories.length === 0 ? (
+                                <option value="" disabled>Chưa có danh mục nào</option>
+                            ) : (
+                                categories.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))
+                            )}
                         </select>
                     </div>
                 </div>
@@ -105,17 +141,16 @@ export default function AddProduct() {
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
                         <label className="text-[0.65rem] font-bold tracking-[0.2rem] uppercase text-outline">Giá Bán (VNĐ)</label>
-                        <input required type="number" name="gia_ban" onChange={handleChange} placeholder="VD: 1500000" className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm" />
+                        <input required type="number" min="0" name="gia_ban" onChange={handleChange} placeholder="VD: 1500000" className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm" />
                     </div>
 
                     <div className="flex flex-col gap-2">
                         <label className="text-[0.65rem] font-bold tracking-[0.2rem] uppercase text-outline">Số lượng tồn kho</label>
-                        <input required type="number" name="so_luong" onChange={handleChange} placeholder="VD: 50" className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm" />
+                        <input required type="number" min="0" name="so_luong" onChange={handleChange} placeholder="VD: 50" className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm" />
                     </div>
                     
                     <div className="flex flex-col gap-2">
                         <label className="text-[0.65rem] font-bold tracking-[0.2rem] uppercase text-outline">Ảnh Sản Phẩm</label>
-                        {/* Đã thêm lại Input chọn File chuẩn Tailwind */}
                         <input 
                             type="file" 
                             accept="image/*" 
@@ -128,10 +163,10 @@ export default function AddProduct() {
                 {/* Nút Submit full width */}
                 <div className="col-span-2 mt-4 flex flex-col gap-2">
                     <label className="text-[0.65rem] font-bold tracking-[0.2rem] uppercase text-outline">Mô tả ngắn</label>
-                    <textarea name="mo_ta" onChange={handleChange} rows="2" placeholder="Chất liệu, form dáng..." className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm resize-none"></textarea>
+                    <textarea name="mo_ta" onChange={handleChange} rows="3" placeholder="Chất liệu, form dáng, chi tiết nổi bật..." className="bg-transparent border-b border-outline-variant/50 py-3 focus:border-primary outline-none font-medium text-sm resize-none"></textarea>
                     
-                    <button type="submit" disabled={isLoading} className="w-full mt-6 py-4 bg-primary text-on-primary font-bold uppercase tracking-[0.2rem] text-[0.75rem] hover:bg-primary-container hover:text-on-primary-container transition-all">
-                        {isLoading ? 'ĐANG TẢI ẢNH VÀ LƯU...' : 'LƯU SẢN PHẨM VÀO KHO'}
+                    <button type="submit" disabled={isLoading} className="w-full mt-6 py-4 bg-primary text-on-primary font-bold uppercase tracking-[0.2rem] text-[0.75rem] hover:bg-primary-container hover:text-on-primary-container transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isLoading ? 'ĐANG XỬ LÝ...' : 'LƯU SẢN PHẨM VÀO KHO'}
                     </button>
                 </div>
             </form>

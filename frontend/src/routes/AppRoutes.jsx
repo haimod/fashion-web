@@ -5,6 +5,7 @@ import AdminLayout from '../components/layout/AdminLayout'
 import PrivateRoute from './PrivateRoute'
 import AdminRoute from './AdminRoute'
 import AddProduct from '../pages/admin/AddProduct';
+import CategoryManagement from '../pages/admin/CategoryManagement';
 // Import trang quản lý sản phẩm vào đầu file
 import ProductManagement from '../pages/admin/ProductManagement';
 import EditProduct from '../pages/admin/EditProduct'; // <-- THÊM DÒNG NÀY
@@ -64,7 +65,6 @@ export default function AppRoutes() {
           {/* <Route path='products' element={<AdminProducts />} /> */}
           <Route path='orders' element={<AdminOrders />} />
           <Route path='users' element={<AdminUsers />} />
-          <Route path='categories' element={<AdminCategories />} />
           <Route path='vouchers' element={<AdminVouchers />} />
           <Route path='collections' element={<AdminCollections />} />
           <Route path='flash-sales' element={<AdminFlashSales />} />
@@ -73,6 +73,8 @@ export default function AppRoutes() {
          {/* thêm sản phẩm */}
           <Route path="products/create" element={<AddProduct />} /> 
           <Route path="products/edit/:id" element={<EditProduct />} /> {/* <-- THÊM DÒNG NÀY */}
+
+          <Route path="categories" element={<CategoryManagement />} />
         </Route>
 
         <Route path='*' element={<NotFound />} />
