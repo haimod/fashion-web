@@ -49,11 +49,14 @@ export default function AdminLayout() {
                         <span className="material-symbols-outlined mr-4">settings</span> Cài đặt
                     </NavLink>
                 </nav>
-                <div className="mt-auto px-8 border-t-0 flex flex-col gap-y-4">
-                    <Link to="#" className="flex items-center font-['Be_Vietnam_Pro'] uppercase tracking-[0.15rem] text-[0.7rem] font-medium text-[#5F5E5E] hover:text-[#1A1C1C] transition-all">
+               <div className="mt-auto px-8 border-t-0 flex flex-col gap-y-1"> {/* Đổi gap-y-4 thành gap-y-1 cho khít */}
+    
+                    {/* ĐÃ SỬA: Thay Link bằng NavLink và dùng getNavClass để menu tự sáng khi nhấn */}
+                    <NavLink to="/admin/support" className={getNavClass}>
                         <span className="material-symbols-outlined mr-4">help</span> Support
-                    </Link>
-                    <Link to="#" className="flex items-center font-['Be_Vietnam_Pro'] uppercase tracking-[0.15rem] text-[0.7rem] font-medium text-[#5F5E5E] hover:text-error transition-all">
+                    </NavLink>
+
+                    <Link to="/login" className="group flex items-center px-3 py-3 font-['Be_Vietnam_Pro'] uppercase tracking-[0.15rem] text-[0.7rem] font-medium text-[#5F5E5E] hover:text-error transition-all duration-300 pl-5">
                         <span className="material-symbols-outlined mr-4">logout</span> Log out
                     </Link>
                 </div>

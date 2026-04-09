@@ -5,6 +5,7 @@ import AdminLayout from '../components/layout/AdminLayout'
 import PrivateRoute from './PrivateRoute'
 import AdminRoute from './AdminRoute'
 import Inventory from '../pages/admin/Inventory';
+import Settings from '../pages/admin/Settings';
 
 // --- CÁC PAGE ĐÃ LÀM XONG TRỰC TIẾP ---
 import AddProduct from '../pages/admin/AddProduct';
@@ -12,7 +13,7 @@ import CategoryManagement from '../pages/admin/CategoryManagement';
 import ProductManagement from '../pages/admin/ProductManagement';
 import EditProduct from '../pages/admin/EditProduct'; 
 import CustomerManagement from '../pages/admin/CustomerManagement'; 
-
+import Support from '../pages/admin/Support';
 // Client pages (lazy load)
 const Home         = lazy(() => import('../pages/client/Home'))
 const Shop         = lazy(() => import('../pages/client/Shop'))
@@ -70,6 +71,8 @@ export default function AppRoutes() {
           <Route path="categories" element={<CategoryManagement />} />
           <Route path="users" element={<CustomerManagement />} />
           <Route path="inventory" element={<Inventory />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="support" element={<Support />} />
 
           {/* CÁC MODULE CHƯA LÀM (Lazy Load) */}
           <Route path='orders' element={<AdminOrders />} />
