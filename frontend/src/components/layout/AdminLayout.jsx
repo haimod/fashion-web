@@ -33,7 +33,7 @@ export default function AdminLayout() {
                     <NavLink to="/admin/orders" className={getNavClass}>
                         <span className="material-symbols-outlined mr-4">shopping_cart</span> Đơn hàng
                     </NavLink>
-                    <NavLink to="/admin/promotions" className={getNavClass}>
+                    <NavLink to="/admin/vouchers" className={getNavClass}>
                         <span className="material-symbols-outlined mr-4">sell</span> Khuyến mãi
                     </NavLink>
                     <NavLink to="/admin/inventory" className={getNavClass}>
