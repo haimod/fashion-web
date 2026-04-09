@@ -30,6 +30,9 @@ export default function AdminLayout() {
                     <NavLink to="/admin/categories" className={getNavClass}>
                         <span className="material-symbols-outlined mr-4">category</span> Danh mục
                     </NavLink>
+                     <NavLink to="/admin/collections" className={getNavClass}>
+                        <span className="material-symbols-outlined mr-4">collections</span> Bộ sưu tập
+                    </NavLink>
                     <NavLink to="/admin/orders" className={getNavClass}>
                         <span className="material-symbols-outlined mr-4">shopping_cart</span> Đơn hàng
                     </NavLink>
