@@ -7,6 +7,7 @@ use App\Http\Controllers\API\Admin\AdminCustomerController;
 use App\Http\Controllers\API\Admin\AdminVoucherController;
 use App\Http\Controllers\API\Admin\AdminFlashSaleController;
 use App\Http\Controllers\API\Admin\AdminCollectionController;
+use App\Http\Controllers\API\Admin\AdminInventoryController;
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
@@ -61,3 +62,7 @@ Route::get('/admin/collections/{id}/available', [AdminCollectionController::clas
 Route::post('/admin/collections/{id}/items', [AdminCollectionController::class, 'addItem']);
 Route::delete('/admin/collections/{id}/items/{ma_sp}', [AdminCollectionController::class, 'removeItem']);
 Route::post('/admin/collections/{id}', [AdminCollectionController::class, 'update']);
+
+// --- QUẢN LÝ TỒN KHO ---
+Route::get('/admin/inventory', [AdminInventoryController::class, 'index']);
+Route::put('/admin/inventory/{ma_sp}/stock', [AdminInventoryController::class, 'updateStock']);
