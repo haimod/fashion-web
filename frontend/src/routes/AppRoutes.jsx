@@ -4,6 +4,7 @@ import ClientLayout from '../components/layout/ClientLayout'
 import AdminLayout from '../components/layout/AdminLayout'
 import PrivateRoute from './PrivateRoute'
 import AdminRoute from './AdminRoute'
+import Inventory from '../pages/admin/Inventory';
 
 // --- CÁC PAGE ĐÃ LÀM XONG TRỰC TIẾP ---
 import AddProduct from '../pages/admin/AddProduct';
@@ -68,6 +69,7 @@ export default function AppRoutes() {
           <Route path="products/edit/:id" element={<EditProduct />} />
           <Route path="categories" element={<CategoryManagement />} />
           <Route path="users" element={<CustomerManagement />} />
+          <Route path="inventory" element={<Inventory />} />
 
           {/* CÁC MODULE CHƯA LÀM (Lazy Load) */}
           <Route path='orders' element={<AdminOrders />} />
