@@ -6,7 +6,7 @@ use App\Http\Controllers\API\Admin\AdminCategoryController;
 use App\Http\Controllers\API\Admin\AdminCustomerController; 
 use App\Http\Controllers\API\Admin\AdminVoucherController;
 use App\Http\Controllers\API\Admin\AdminFlashSaleController;
-
+use App\Http\Controllers\API\Admin\AdminCollectionController;
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
@@ -49,3 +49,15 @@ Route::get('/admin/flash-sales/{ma_fs}/items', [AdminFlashSaleController::class,
 Route::get('/admin/flash-sales/{ma_fs}/available-variants', [AdminFlashSaleController::class, 'getAvailableVariants']);
 Route::post('/admin/flash-sales/{ma_fs}/items', [AdminFlashSaleController::class, 'addItem']);
 Route::delete('/admin/flash-sales/{ma_fs}/items/{ma_bien_the}', [AdminFlashSaleController::class, 'removeItem']);
+
+// --- QUẢN LÝ BỘ SƯU TẬP ---
+Route::get('/admin/collections', [AdminCollectionController::class, 'index']);
+Route::post('/admin/collections', [AdminCollectionController::class, 'store']);
+Route::delete('/admin/collections/{id}', [AdminCollectionController::class, 'destroy']);
+
+// Route cho Chi tiết Bộ sưu tập
+Route::get('/admin/collections/{id}/items', [AdminCollectionController::class, 'getItems']);
+Route::get('/admin/collections/{id}/available', [AdminCollectionController::class, 'getAvailableProducts']);
+Route::post('/admin/collections/{id}/items', [AdminCollectionController::class, 'addItem']);
+Route::delete('/admin/collections/{id}/items/{ma_sp}', [AdminCollectionController::class, 'removeItem']);
+Route::post('/admin/collections/{id}', [AdminCollectionController::class, 'update']);
