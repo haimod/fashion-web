@@ -9,6 +9,10 @@ use App\Http\Controllers\API\Admin\AdminFlashSaleController;
 use App\Http\Controllers\API\Admin\AdminCollectionController;
 use App\Http\Controllers\API\Admin\AdminInventoryController;
 use App\Http\Controllers\API\Admin\AdminProfileController;
+
+
+
+use App\Http\Controllers\API\Client\ClientHomeController;
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
@@ -69,3 +73,6 @@ Route::get('/admin/inventory', [AdminInventoryController::class, 'index']);
 Route::put('/admin/inventory/{ma_sp}/stock', [AdminInventoryController::class, 'updateStock']);
 
 Route::get('/admin/profile', [AdminProfileController::class, 'getAdminInfo']);
+
+Route::get('/client/category/{ma_dm}', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getCategoryProducts']);
+Route::get('/client/home-data', [ClientHomeController::class, 'getHomeData']);
