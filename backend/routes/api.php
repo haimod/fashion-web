@@ -78,3 +78,8 @@ Route::get('/client/category/{ma_dm}', [App\Http\Controllers\API\Client\ClientHo
 Route::get('/client/home-data', [ClientHomeController::class, 'getHomeData']);
 
 Route::get('/client/product/{id}', [App\Http\Controllers\API\Client\ClientProductController::class, 'getProductDetail']);
+
+Route::get('/client/category/{ma_dm}', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getCategoryProducts']);
+
+// Route cho trang Shop tổng (Tất cả sản phẩm) và Tìm kiếm
+Route::get('/client/shop', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getAllProducts']);
