@@ -9,7 +9,7 @@ use App\Http\Controllers\API\Admin\AdminFlashSaleController;
 use App\Http\Controllers\API\Admin\AdminCollectionController;
 use App\Http\Controllers\API\Admin\AdminInventoryController;
 use App\Http\Controllers\API\Admin\AdminProfileController;
-
+use App\Http\Controllers\API\Admin\ClientProductController;
 
 
 use App\Http\Controllers\API\Client\ClientHomeController;
@@ -76,3 +76,5 @@ Route::get('/admin/profile', [AdminProfileController::class, 'getAdminInfo']);
 
 Route::get('/client/category/{ma_dm}', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getCategoryProducts']);
 Route::get('/client/home-data', [ClientHomeController::class, 'getHomeData']);
+
+Route::get('/client/product/{id}', [App\Http\Controllers\API\Client\ClientProductController::class, 'getProductDetail']);
