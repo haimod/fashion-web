@@ -9,7 +9,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import PrivateRoute from './PrivateRoute';
 import AdminRoute from './AdminRoute';
 
-// --- ADMIN PAGES (Import trực tiếp cho mượt) ---
+// --- ADMIN PAGES ---
 import Dashboard from '../pages/admin/Dashboard';
 import ProductManagement from '../pages/admin/ProductManagement';
 import AddProduct from '../pages/admin/AddProduct';
@@ -20,7 +20,9 @@ import Inventory from '../pages/admin/Inventory';
 import Settings from '../pages/admin/Settings';
 import Support from '../pages/admin/Support';
 
-// --- CLIENT PAGES (Lazy Load để tối ưu tốc độ) ---
+// --- CLIENT PAGES ---
+import CategoryPage from '../pages/client/CategoryPage'; 
+
 const Home          = lazy(() => import('../pages/client/Home'));
 const Shop          = lazy(() => import('../pages/client/Shop'));
 const ProductDetail = lazy(() => import('../pages/client/ProductDetail'));
@@ -30,13 +32,16 @@ const OrderHistory  = lazy(() => import('../pages/client/OrderHistory'));
 const Profile       = lazy(() => import('../pages/client/Profile'));
 const Wishlist      = lazy(() => import('../pages/client/Wishlist'));
 
+// 🚨 THÊM DÒNG NÀY: Khai báo trang Tìm kiếm 🚨
+const SearchPage    = lazy(() => import('../pages/client/SearchPage'));
+
 // --- AUTH PAGES ---
 const Login          = lazy(() => import('../pages/auth/Login'));
 const Register       = lazy(() => import('../pages/auth/Register'));
 const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword'));
 const NotFound       = lazy(() => import('../pages/NotFound'));
 
-// --- ADMIN PAGES (Các module còn lại) ---
+// --- ADMIN PAGES ---
 const AdminOrders      = lazy(() => import('../pages/admin/Orders'));
 const AdminVouchers    = lazy(() => import('../pages/admin/Vouchers'));
 const AdminCollections = lazy(() => import('../pages/admin/Collections'));
@@ -45,17 +50,20 @@ const AdminReports     = lazy(() => import('../pages/admin/Reports'));
 
 export default function AppRoutes() {
     return (
-        <Suspense fallback={<div className="p-10 text-center font-bold">VIBE STUDIO IS LOADING...</div>}>
+        <Suspense fallback={<div className="p-10 text-center font-bold text-[#3E2723]">VIBE STUDIO IS LOADING...</div>}>
             <Routes>
                 {/* 1. KHU VỰC NGƯỜI DÙNG (CLIENT) */}
                 <Route element={<ClientLayout />}>
                     <Route path='/' element={<Home />} />
                     <Route path='/shop' element={<Shop />} />
-                    {/* <Route path='/shop/:slug' element={<ProductDetail />} /> */}
                     <Route path='/cart' element={<Cart />} />
-                    <Route path="/shop/:id" element={<ProductDetail />} />
+
+                    {/* 🚨 THÊM DÒNG NÀY: Route cho trang kết quả tìm kiếm 🚨 */}
+                    <Route path='/search' element={<SearchPage />} />
+
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="category/:id" element={<CategoryPage />} />
                     
-                    {/* Các trang cần đăng nhập mới vào được */}
                     <Route element={<PrivateRoute />}>
                         <Route path='/checkout' element={<Checkout />} />
                         <Route path='/orders' element={<OrderHistory />} />
@@ -72,8 +80,6 @@ export default function AppRoutes() {
                 {/* 3. KHU VỰC QUẢN TRỊ (ADMIN) */}
                 <Route path='/admin' element={<AdminLayout />}>
                     <Route index element={<Dashboard />} />
-                    
-                    {/* Các Module đã hoàn thiện */}
                     <Route path="products" element={<ProductManagement />} />
                     <Route path="products/create" element={<AddProduct />} /> 
                     <Route path="products/edit/:id" element={<EditProduct />} />
@@ -82,8 +88,6 @@ export default function AppRoutes() {
                     <Route path="inventory" element={<Inventory />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="support" element={<Support />} />
-
-                    {/* Các Module chờ xử lý tiếp */}
                     <Route path='orders' element={<AdminOrders />} />
                     <Route path='vouchers' element={<AdminVouchers />} />
                     <Route path='collections' element={<AdminCollections />} />
@@ -91,7 +95,6 @@ export default function AppRoutes() {
                     <Route path='reports' element={<AdminReports />} />
                 </Route>
 
-                {/* 4. TRANG 404 */}
                 <Route path='*' element={<NotFound />} />
             </Routes>
         </Suspense>

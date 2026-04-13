@@ -1,46 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 export default function ClientHeader() {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+    const navigate = useNavigate();
+    
+    const cartCount = 2;
 
-    // Hiệu ứng đổi màu Header khi cuộn chuột
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim() !== "") {
+        // 🚨 THAY ĐỔI QUAN TRỌNG: Dẫn về /search kèm theo query 🚨
+        navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+        
+        // Đóng search trên mobile và xóa input (tùy chọn)
+        setIsMobileSearchOpen(false);
+        setSearchQuery(""); 
+    }
+};
+
     const navLinkClass = ({ isActive }) => 
-        `font-['Be_Vietnam_Pro'] tracking-tight font-bold uppercase text-[12px] md:text-[14px] transition-all duration-300 ${
-            isActive ? 'text-[#7C572D]' : 'text-[#5F5E5E] dark:text-[#50453B] hover:text-[#7C572D]'
+        `text-[11px] lg:text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 relative pb-2 ${
+            isActive 
+                ? 'text-[#3E2723] after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#3E2723]' 
+                : 'text-[#3E2723]/50 hover:text-[#C6A15B]'
         }`;
 
     return (
-        <nav className={`fixed top-0 w-full flex justify-between items-center px-8 py-6 h-20 z-50 transition-all duration-500 ${
-            isScrolled ? 'bg-white/90 dark:bg-[#1A1C1C]/90 backdrop-blur-xl shadow-sm h-16' : 'bg-[#F9F9F9]/70 dark:bg-[#1A1C1C]/70 backdrop-blur-md'
+        <header className={`fixed top-0 w-full z-[100] transition-all duration-500 ease-in-out ${
+            isScrolled 
+                ? 'bg-[#FDFBF9]/95 backdrop-blur-md shadow-sm h-16' 
+                : 'bg-[#FDFBF9] h-20'
         }`}>
-            <div className="flex items-center gap-12">
-                <Link to="/" className="text-2xl font-black tracking-tighter text-[#1A1C1C] dark:text-[#F9F9F9] uppercase">
-                    Vibe Studio
-                </Link>
-                <div className="hidden md:flex items-center gap-8">
-                    <NavLink to="/shop/nam" className={navLinkClass}>Nam</NavLink>
-                    <NavLink to="/shop/nu" className={navLinkClass}>Nữ</NavLink>
-                    <NavLink to="/collections" className={navLinkClass}>Bộ sưu tập</NavLink>
-                    <NavLink to="/sale" className={navLinkClass}>Khuyến mãi</NavLink>
-                </div>
-            </div>
+            <div className="max-w-[1440px] mx-auto h-full px-6 lg:px-12 flex justify-between items-center relative">
+                
+                {/* --- TRÁI: LOGO & SEARCH (DESKTOP) --- */}
+                <div className="flex items-center gap-10">
+                    <Link to="/" className="text-xl md:text-2xl font-black tracking-tighter text-[#3E2723] uppercase hover:opacity-70 transition-opacity">
+                        Vibe Studio
+                    </Link>
 
-            <div className="flex items-center gap-6">
-                <Link to="/profile" className="material-symbols-outlined text-[#7C572D] hover:scale-110 transition-transform">person</Link>
-                <Link to="/wishlist" className="material-symbols-outlined text-[#7C572D] hover:scale-110 transition-transform">favorite</Link>
-                <Link to="/cart" className="relative material-symbols-outlined text-[#7C572D] hover:scale-110 transition-transform">
-                    shopping_bag
-                    {/* Giỏ hàng có số lượng (Ví dụ: 2) */}
-                    <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full font-bold">2</span>
-                </Link>
+                    <div className="hidden lg:flex items-center relative group">
+                        <span className="material-symbols-outlined text-[20px] absolute left-0 opacity-40 group-focus-within:text-[#C6A15B] group-focus-within:opacity-100 transition-all">search</span>
+                        <input 
+                            type="text"
+                            placeholder="TÌM SẢN PHẨM..."
+                            className="bg-transparent border-none border-b border-transparent focus:border-[#3E2723]/10 focus:ring-0 text-[11px] font-bold uppercase tracking-widest w-32 focus:w-60 pl-8 pb-1 transition-all duration-500 placeholder:text-[#3E2723]/20"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearch}
+                        />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery("")} className="absolute right-0 text-[14px] opacity-40 hover:opacity-100">✕</button>
+                        )}
+                    </div>
+                </div>
+
+                {/* --- GIỮA: MENU --- */}
+                <nav className="hidden md:flex items-center gap-8 lg:gap-12">
+                    <NavLink to="/category/DM_NAM" className={navLinkClass}>Nam</NavLink>
+                    <NavLink to="/category/DM_NU" className={navLinkClass}>Nữ</NavLink>
+                    <NavLink to="/shop" end className={navLinkClass}>Bộ sưu tập</NavLink>
+                    <NavLink to="/sale" className={navLinkClass}>Sale</NavLink>
+                </nav>
+
+                {/* --- PHẢI: ICONS --- */}
+                <div className="flex items-center gap-5 lg:gap-7 text-[#3E2723]">
+                    {/* Search Trigger (Mobile) */}
+                    <button 
+                        onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+                        className="lg:hidden material-symbols-outlined text-[24px] hover:text-[#C6A15B]"
+                    >
+                        {isMobileSearchOpen ? 'close' : 'search'}
+                    </button>
+
+                    <Link to="/profile" className="hover:text-[#C6A15B] transition-colors">
+                        <span className="material-symbols-outlined text-[26px] font-light">person</span>
+                    </Link>
+
+                    <Link to="/cart" className="relative group p-1">
+                        <span className="material-symbols-outlined text-[24px] font-light group-hover:scale-110 transition-transform duration-300">
+                            shopping_bag
+                        </span>
+                        {cartCount > 0 && (
+                            <span className="absolute top-0 right-0 bg-[#3E2723] text-[#FDFBF9] text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full">
+                                {cartCount}
+                            </span>
+                        )}
+                    </Link>
+                </div>
+
+                {/* --- SEARCH OVERLAY (MOBILE) --- */}
+                <div className={`absolute top-full left-0 w-full bg-[#FDFBF9] border-b border-[#3E2723]/5 px-6 py-4 transition-all duration-300 md:hidden ${
+                    isMobileSearchOpen ? 'opacity-100 translate-y-0 visible' : 'opacity-0 -translate-y-4 invisible'
+                }`}>
+                    <div className="flex items-center bg-[#3E2723]/5 px-4 py-2">
+                        <input 
+                            type="text"
+                            placeholder="TÌM SẢN PHẨM..."
+                            className="bg-transparent border-none focus:ring-0 text-[12px] font-bold uppercase w-full"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearch}
+                        />
+                        <button onClick={() => setSearchQuery("")} className="material-symbols-outlined text-[20px] opacity-40">close</button>
+                    </div>
+                </div>
+
             </div>
-        </nav>
+        </header>
     );
 }
