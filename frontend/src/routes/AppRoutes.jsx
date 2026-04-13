@@ -51,8 +51,9 @@ export default function AppRoutes() {
                 <Route element={<ClientLayout />}>
                     <Route path='/' element={<Home />} />
                     <Route path='/shop' element={<Shop />} />
-                    <Route path='/shop/:slug' element={<ProductDetail />} />
+                    {/* <Route path='/shop/:slug' element={<ProductDetail />} /> */}
                     <Route path='/cart' element={<Cart />} />
+                    <Route path="/shop/:id" element={<ProductDetail />} />
                     
                     {/* Các trang cần đăng nhập mới vào được */}
                     <Route element={<PrivateRoute />}>

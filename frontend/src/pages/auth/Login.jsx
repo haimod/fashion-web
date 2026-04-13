@@ -168,7 +168,7 @@ const handleLogin = async (e) => {
       <div className="hidden lg:block absolute bottom-12 right-12 text-right">
         <span className="text-[5rem] font-black leading-none opacity-5 select-none pointer-events-none">CURATED</span>
         <div className="mt-2 text-[0.6rem] font-bold uppercase tracking-[0.4rem] text-on-background/40">
-          VIBE STUDIO EDITORIAL ©2024
+          VIBE STUDIO EDITORIAL ©2026
         </div>
       </div>
 
