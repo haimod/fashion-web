@@ -23,6 +23,8 @@ import Support from '../pages/admin/Support';
 // --- CLIENT PAGES ---
 import CategoryPage from '../pages/client/CategoryPage'; 
 import CollectionPage from '../pages/client/CollectionPage';
+import Orders from '../pages/client/Orders'
+import OrderDetail from '../pages/client/OrderDetail'; // Add ở trên
 
 const Home          = lazy(() => import('../pages/client/Home'));
 const Shop          = lazy(() => import('../pages/client/Shop'));
@@ -66,17 +68,19 @@ export default function AppRoutes() {
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="category/:id" element={<CategoryPage />} />
                     <Route path='/collection/:id' element={<CollectionDetail />} />
+
+                    
                     <Route element={<PrivateRoute />}>
                         <Route path='/checkout' element={<Checkout />} />
-                        <Route path='/orders' element={<OrderHistory />} />
                         <Route path='/profile' element={<Profile />} />
                         <Route path='/wishlist' element={<Wishlist />} />
-
+                        <Route path="/orders" element={<Orders />} />
 
                     </Route>
                     
                     <Route path="/shop" element={<CollectionPage />} />
                      <Route path='/sale' element={<SalePage />} />
+                     <Route path="/orders/:id" element={<OrderDetail />} /> {/* <--- THÊM DÒNG NÀY */}
 
                 </Route>
 
