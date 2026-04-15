@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 class ClientOrderController extends Controller
 {
   public function placeOrder(Request $request)
@@ -203,52 +203,101 @@ class ClientOrderController extends Controller
     /**
      * Lấy thông tin chi tiết 1 đơn hàng cụ thể
      */
+   // Thêm thư viện Carbon ở đầu file nếu chưa có: use Carbon\Carbon;
+
+    /**
+     * Lấy Chi tiết 1 Đơn hàng (Dành cho Client)
+     */
     public function getOrderDetail(Request $request, $ma_dh)
     {
         try {
             $user = $request->user();
             
-            // Lấy thông tin chung của đơn hàng
             $order = DB::table('donhang')
-                ->where('ma_dh', $ma_dh)
-                ->where('ma_kh', $user->ma_kh)
+                ->join('diachi_kh', 'donhang.ma_dc', '=', 'diachi_kh.ma_dc')
+                ->where('donhang.ma_dh', $ma_dh)
+                ->where('donhang.ma_kh', $user->ma_kh)
+                ->select('donhang.*', 'diachi_kh.ten_nguoi_nhan', 'diachi_kh.sdt_nguoi_nhan', 'diachi_kh.dia_chi_ct', 'diachi_kh.quan_huyen', 'diachi_kh.thanh_pho')
                 ->first();
-                
+
             if (!$order) {
-                return response()->json(['error' => 'Không tìm thấy đơn hàng'], 404);
+                return response()->json(['error' => 'Không tìm thấy đơn hàng!'], 404);
             }
 
-            // Lấy thông tin địa chỉ giao hàng
-            $address = DB::table('diachi_kh')->where('ma_dc', $order->ma_dc)->first();
-
-            // Lấy thông tin voucher (nếu có áp dụng)
-            $voucher = null;
-            if ($order->ma_voucher) {
-                $voucher = DB::table('voucher')->where('ma_voucher', $order->ma_voucher)->first();
-            }
-
-            // Lấy danh sách sản phẩm trong đơn
             $items = DB::table('chitiet_dh')
                 ->join('bienthe_sp', 'chitiet_dh.ma_bien_the', '=', 'bienthe_sp.ma_bien_the')
                 ->join('sanpham', 'bienthe_sp.ma_sp', '=', 'sanpham.ma_sp')
                 ->where('chitiet_dh.ma_dh', $ma_dh)
                 ->select(
-                    'sanpham.ten_sp', 
-                    'sanpham.hinh_anh', 
                     'sanpham.ma_sp',
-                    'bienthe_sp.kich_thuoc', 
-                    'bienthe_sp.mau_sac', 
-                    'chitiet_dh.so_luong', 
+                    'sanpham.ten_sp',
+                    'sanpham.hinh_anh',
+                    'bienthe_sp.kich_thuoc',
+                    'bienthe_sp.mau_sac',
+                    'chitiet_dh.so_luong',
                     'chitiet_dh.don_gia'
                 )
                 ->get();
 
-            return response()->json([
-                'order' => $order,
-                'address' => $address,
-                'voucher' => $voucher,
-                'items' => $items
-            ], 200);
+            // Kiểm tra xem sản phẩm nào trong đơn này đã được đánh giá
+            $reviewed_products = DB::table('danhgia_sp')->where('ma_dh', $ma_dh)->pluck('ma_sp')->toArray();
+
+            foreach ($items as $item) {
+                $item->is_reviewed = in_array($item->ma_sp, $reviewed_products);
+            }
+
+            return response()->json(['order' => $order, 'items' => $items], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Khách hàng gửi Đánh giá Sản phẩm
+     */
+    public function submitReview(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $ma_sp = $request->input('ma_sp');
+            $ma_dh = $request->input('ma_dh');
+            $so_sao = $request->input('so_sao');
+            $noi_dung = $request->input('noi_dung');
+
+            // 1. Kiểm tra đơn hàng có hợp lệ và đã giao chưa
+            $order = DB::table('donhang')
+                ->where('ma_dh', $ma_dh)
+                ->where('ma_kh', $user->ma_kh)
+                ->where('trang_thai', 'DA_GIAO')
+                ->first();
+
+            if (!$order) {
+                return response()->json(['error' => 'Chỉ có thể đánh giá khi đơn hàng đã giao thành công!'], 400);
+            }
+
+            // 2. Kiểm tra xem khách đã đánh giá sp này trong đơn này chưa
+            $exists = DB::table('danhgia_sp')
+                ->where('ma_dh', $ma_dh)
+                ->where('ma_sp', $ma_sp)
+                ->exists();
+
+            if ($exists) {
+                return response()->json(['error' => 'Bạn đã đánh giá sản phẩm này rồi!'], 400);
+            }
+
+            // 3. Lưu vào Database
+            DB::table('danhgia_sp')->insert([
+                'ma_danh_gia' => 'DG_' . time() . rand(10, 99),
+                'ma_kh' => $user->ma_kh,
+                'ma_sp' => $ma_sp,
+                'ma_dh' => $ma_dh,
+                'so_sao' => $so_sao,
+                'noi_dung' => $noi_dung,
+                'created_at' => Carbon::now()
+            ]);
+
+            return response()->json(['message' => 'Cảm ơn bạn đã đánh giá! Vibe Studio rất trân trọng ý kiến của bạn.'], 200);
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/client/voucher/apply', [ClientCartController::class, 'applyVoucher']);
     Route::get('/client/orders/{ma_dh}', [ClientOrderController::class, 'getOrderDetail']);
     Route::put('/client/orders/{ma_dh}/cancel', [ClientOrderController::class, 'cancelOrder']);
+    Route::post('/client/reviews', [ClientOrderController::class, 'submitReview']);
 
 });
 // Admin routes (Sanctum auth + Role)
@@ -136,3 +137,4 @@ Route::get('/client/product/{id}', [ClientProductController::class, 'getProductD
 Route::get('/client/collections/{id}', [ClientHomeController::class, 'getCollectionDetail']);
 
 Route::get('/client/vouchers', [ClientHomeController::class, 'getVouchers']);
+
