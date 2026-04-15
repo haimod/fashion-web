@@ -18,7 +18,8 @@ use App\Http\Controllers\API\Client\ClientProductController;
 
 
 use App\Http\Controllers\API\Client\ClientProfileController;
-
+use App\Http\Controllers\API\Client\ClientCartController;
+use App\Http\Controllers\API\Client\ClientOrderController;
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
@@ -35,6 +36,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Sửa, xóa địa chỉ
     Route::put('/client/addresses/{id}', [ClientProfileController::class, 'updateAddress']);
     Route::delete('/client/addresses/{id}', [ClientProfileController::class, 'deleteAddress']);
+
+    // API Giỏ hàng
+    Route::get('/client/cart', [ClientCartController::class, 'getCart']);
+    Route::put('/client/cart/{ma_bien_the}', [ClientCartController::class, 'updateQuantity']);
+    Route::delete('/client/cart/{ma_bien_the}', [ClientCartController::class, 'removeItem']);
+    Route::post('/client/cart/add', [ClientCartController::class, 'addToCart']);
+    Route::post('/client/checkout', [ClientOrderController::class, 'placeOrder']);
+    Route::get('/client/orders', [ClientOrderController::class, 'getOrders']);
+    Route::post('/client/voucher/apply', [ClientCartController::class, 'applyVoucher']);
+    Route::get('/client/orders/{ma_dh}', [ClientOrderController::class, 'getOrderDetail']);
 });
 // Admin routes (Sanctum auth + Role)
 Route::prefix('admin')->middleware(['auth:sanctum','role:admin'])->group(base_path('routes/api/admin.php'));
