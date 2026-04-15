@@ -101,3 +101,5 @@ Route::get('/client/product/{id}', [ClientProductController::class, 'getProductD
 
 
 Route::get('/client/collections/{id}', [ClientHomeController::class, 'getCollectionDetail']);
+
+Route::get('/client/vouchers', [ClientHomeController::class, 'getVouchers']);

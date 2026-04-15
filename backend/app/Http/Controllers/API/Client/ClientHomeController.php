@@ -180,4 +180,22 @@ class ClientHomeController extends Controller
             return response()->json(['error' => 'Lỗi tải chi tiết BST: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * API LẤY DANH SÁCH VOUCHER CHO TRANG SALE
+     */
+    public function getVouchers()
+    {
+        try {
+            $now = Carbon::now('Asia/Ho_Chi_Minh');
+            $vouchers = DB::table('voucher')
+                ->where('ngay_bat_dau', '<=', $now)
+                ->where('ngay_het_han', '>=', $now)
+                ->whereRaw('so_lan_da_dung < so_lan_su_dung_toi_da') // Chỉ lấy mã chưa hết lượt
+                ->get();
+            return response()->json($vouchers, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Lỗi tải voucher: ' . $e->getMessage()], 500);
+        }
+    }
 }
