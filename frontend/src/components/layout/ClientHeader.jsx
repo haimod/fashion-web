@@ -65,9 +65,10 @@ export default function ClientHeader() {
 
                 {/* --- GIỮA: MENU --- */}
                 <nav className="hidden md:flex items-center gap-8 lg:gap-12">
-                    <NavLink to="/category/DM_NAM" className={navLinkClass}>Nam</NavLink>
-                    <NavLink to="/category/DM_NU" className={navLinkClass}>Nữ</NavLink>
-                    <NavLink to="/shop" end className={navLinkClass}>Bộ sưu tập</NavLink>
+                    <NavLink to="/category/NAM" className={navLinkClass}>Nam</NavLink>
+                    <NavLink to="/category/NU" className={navLinkClass}>Nữ</NavLink>
+                                    
+                   <NavLink to="/shop" className={navLinkClass}>Bộ Sưu Tập</NavLink>
                     <NavLink to="/sale" className={navLinkClass}>Sale</NavLink>
                 </nav>
 

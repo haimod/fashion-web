@@ -22,6 +22,7 @@ import Support from '../pages/admin/Support';
 
 // --- CLIENT PAGES ---
 import CategoryPage from '../pages/client/CategoryPage'; 
+import CollectionPage from '../pages/client/CollectionPage';
 
 const Home          = lazy(() => import('../pages/client/Home'));
 const Shop          = lazy(() => import('../pages/client/Shop'));
@@ -31,6 +32,7 @@ const Checkout      = lazy(() => import('../pages/client/Checkout'));
 const OrderHistory  = lazy(() => import('../pages/client/OrderHistory'));
 const Profile       = lazy(() => import('../pages/client/Profile'));
 const Wishlist      = lazy(() => import('../pages/client/Wishlist'));
+const CollectionDetail = lazy(() => import('../pages/client/CollectionDetail'));
 
 // 🚨 THÊM DÒNG NÀY: Khai báo trang Tìm kiếm 🚨
 const SearchPage    = lazy(() => import('../pages/client/SearchPage'));
@@ -55,7 +57,6 @@ export default function AppRoutes() {
                 {/* 1. KHU VỰC NGƯỜI DÙNG (CLIENT) */}
                 <Route element={<ClientLayout />}>
                     <Route path='/' element={<Home />} />
-                    <Route path='/shop' element={<Shop />} />
                     <Route path='/cart' element={<Cart />} />
 
                     {/* 🚨 THÊM DÒNG NÀY: Route cho trang kết quả tìm kiếm 🚨 */}
@@ -63,13 +64,17 @@ export default function AppRoutes() {
 
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="category/:id" element={<CategoryPage />} />
-                    
+                    <Route path='/collection/:id' element={<CollectionDetail />} />
                     <Route element={<PrivateRoute />}>
                         <Route path='/checkout' element={<Checkout />} />
                         <Route path='/orders' element={<OrderHistory />} />
                         <Route path='/profile' element={<Profile />} />
                         <Route path='/wishlist' element={<Wishlist />} />
+
+
                     </Route>
+                    
+                    <Route path="/shop" element={<CollectionPage />} />
                 </Route>
 
                 {/* 2. KHU VỰC ĐĂNG NHẬP / ĐĂNG KÝ */}

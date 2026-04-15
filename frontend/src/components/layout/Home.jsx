@@ -29,7 +29,7 @@ export default function Home() {
                 <div className="relative z-10 max-w-2xl">
                     <p className="font-['Be_Vietnam_Pro'] text-[11px] uppercase tracking-[0.4rem] text-primary mb-4">Summer Collection</p>
                     <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-on-background uppercase mb-8 leading-[0.9]">
-                        Bộ sưu tập<br/>Hè 2025
+                        Bộ sưu tập<br/>Hè 2026
                     </h1>
                     <button className="bg-primary text-on-primary px-12 py-5 font-bold uppercase tracking-[0.2rem] text-sm hover:bg-black transition-all duration-500 vibe-shadow">
                         Khám phá ngay

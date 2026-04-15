@@ -58,7 +58,7 @@ const FlashSaleBlock = ({ sale, formatPrice }) => {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {sale.items.slice(0, 4).map(item => (
-                    <Link to={`/shop/${item.ma_sp}`} key={item.ma_sp} className="group bg-white p-3 shadow-sm hover:shadow-xl transition-shadow duration-500">
+                    <Link to={`/product/${item.ma_sp}`} key={item.ma_sp} className="group bg-white p-3 shadow-sm hover:shadow-xl transition-shadow duration-500">
                         <div className="relative aspect-[3/4] overflow-hidden mb-3 bg-[#F5F5F5]">
                             <img className="w-full h-full object-cover mix-blend-multiply transition-transform duration-700 group-hover:scale-105" src={`${STORAGE_URL}/${item.hinh_anh}`} alt={item.ten_sp} />
                             <div className="absolute top-2 left-2 bg-[#B71C1C] text-white px-3 py-1 text-[10px] font-black shadow-md uppercase tracking-widest">
@@ -101,7 +101,7 @@ const ProductSlider = ({ title, products, formatPrice, sliderRef, isDynamic = fa
             
             <div ref={scrollContainerRef} className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-6 pb-4">
                 {products.map(item => (
-                    <Link to={`/shop/${item.ma_sp}`} key={item.ma_sp} className="snap-start min-w-[70%] md:min-w-[calc(25%-1.2rem)] group bg-white p-3 shadow-sm hover:shadow-lg transition-all duration-300 relative">
+                    <Link to={`/product/${item.ma_sp}`} key={item.ma_sp} className="snap-start min-w-[70%] md:min-w-[calc(25%-1.2rem)] group bg-white p-3 shadow-sm hover:shadow-lg transition-all duration-300 relative">
                         {item.gia_flash && (
                             <div className="absolute top-5 left-5 z-10 bg-[#B71C1C] text-white px-2 py-1 text-[9px] font-black shadow-md uppercase tracking-widest">SALE</div>
                         )}
@@ -166,7 +166,7 @@ const HeroCarousel = () => {
 };
 
 export default function Home() {
-    const [homeData, setHomeData] = useState(null); // Đổi về null để check loading
+    const [homeData, setHomeData] = useState(null); 
     const [dynamicSec, setDynamicSec] = useState({ title: 'Hàng mới về', products: [] });
     const [activeTab, setActiveTab] = useState(0); 
     const [activeCatId, setActiveCatId] = useState(null);
@@ -180,7 +180,6 @@ export default function Home() {
         fetch(`${API_BASE}/client/home-data`)
             .then(res => res.json())
             .then(data => {
-                // 🚨 BẮT LỖI BACKEND NÉM RA MÀN HÌNH 🚨
                 if (data.error) {
                     setHomeData({ isError: true, message: data.error });
                     setIsLoading(false);
@@ -202,8 +201,10 @@ export default function Home() {
     const handleBookmark = async (cat) => {
         setActiveCatId(cat.ma_dm);
         try {
-            const res = await fetch(`${API_BASE}/client/category/${cat.ma_dm}`);
+            const prefix = cat.ma_dm.split('_')[0]; 
+            const res = await fetch(`${API_BASE}/client/category/${prefix}?sub_category=${cat.ma_dm}`);
             const products = await res.json();
+            
             setDynamicSec({ title: cat.ten_dm, products });
             
             setTimeout(() => {
@@ -224,7 +225,6 @@ export default function Home() {
 
     if (isLoading) return <HomeSkeleton />;
 
-    // NẾU BACKEND BÁO LỖI, IN THẲNG RA MÀN HÌNH CHO SẾP THẤY
     if (homeData && homeData.isError) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF9] p-8">
@@ -236,9 +236,6 @@ export default function Home() {
                     <div className="bg-white p-4 rounded border border-gray-200 overflow-x-auto">
                         <p className="text-[#B71C1C] font-mono text-sm break-all">{homeData.message}</p>
                     </div>
-                    <p className="text-[#3E2723] text-sm mt-6 font-bold italic">
-                        👉 Sếp copy cái dòng chữ đỏ trong khung trắng ở trên quăng lại đây, tôi sẽ xử lý triệt để trong 1 nốt nhạc!
-                    </p>
                 </div>
             </div>
         );
@@ -247,25 +244,33 @@ export default function Home() {
     return (
         <div className="animate-fade-in bg-[#FDFBF9] text-[#3E2723]">
             <HeroCarousel />
-            <div ref={stickyMenuRef} className="sticky top-[64px] z-40 bg-[#FDFBF9]/95 backdrop-blur-xl py-4 border-b border-[#3E2723]/10 shadow-md">
+            
+            {/* VÒNG TRÒN DANH MỤC (Thanh lịch, tàng hình scrollbar) */}
+            <div ref={stickyMenuRef} className="sticky top-[64px] z-40 bg-[#FDFBF9]/95 backdrop-blur-xl py-2 md:py-3 border-b border-[#3E2723]/10 shadow-sm">
                 <div className="max-w-7xl mx-auto px-8 flex items-center gap-4">
-                    <button onClick={() => scrollCategories('left')} className="text-[#3E2723] hover:text-[#C6A15B] transition-colors md:block hidden"><span className="material-symbols-outlined font-bold text-xl">chevron_left</span></button>
-                    <div ref={scrollCatRef} className="flex-1 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-2">
-                        <div className="flex gap-6 md:gap-10">
-                            {homeData.categories?.map((cat) => {
-                                const isActive = activeCatId === cat.ma_dm;
-                                return (
-                                    <button key={cat.ma_dm} onClick={() => handleBookmark(cat)} className="snap-start flex flex-col items-center gap-2 group min-w-[70px] md:min-w-[90px]">
-                                        <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-2 transition-all duration-300 p-1 overflow-hidden ${isActive ? 'border-[#3E2723] scale-110 shadow-md rotate-3' : 'border-[#3E2723]/20 hover:border-[#C6A15B]'}`}>
-                                            <img className="w-full h-full object-cover rounded-full mix-blend-multiply transition-transform duration-500 group-hover:scale-110" src={cat.representative_image ? `${STORAGE_URL}/${cat.representative_image}` : "https://via.placeholder.com/150"} alt={cat.ten_dm} />
-                                        </div>
-                                        <span className={`text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[#3E2723]' : 'text-[#3E2723]/60 group-hover:text-[#C6A15B]'}`}>{cat.ten_dm}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                    <button onClick={() => scrollCategories('left')} className="text-[#3E2723] hover:text-[#C6A15B] transition-colors md:block hidden">
+                        <span className="material-symbols-outlined font-bold text-lg">chevron_left</span>
+                    </button>
+                    
+                    <div ref={scrollCatRef} className="flex-1 overflow-x-auto snap-x snap-mandatory flex gap-5 md:gap-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-1">
+                        {homeData.categories?.map((cat) => {
+                            const isActive = activeCatId === cat.ma_dm;
+                            return (
+                                <button key={cat.ma_dm} onClick={() => handleBookmark(cat)} className="snap-start flex flex-col items-center gap-1.5 group min-w-[65px] md:min-w-[75px]">
+                                    <div className={`w-11 h-11 md:w-14 md:h-14 rounded-full border transition-all duration-300 p-[2px] overflow-hidden ${isActive ? 'border-[#3E2723] scale-105 shadow-sm' : 'border-[#3E2723]/20 hover:border-[#C6A15B]'}`}>
+                                        <img className="w-full h-full object-cover rounded-full mix-blend-multiply transition-transform duration-500 group-hover:scale-110" src={cat.representative_image ? `${STORAGE_URL}/${cat.representative_image}` : "https://via.placeholder.com/150"} alt={cat.ten_dm} />
+                                    </div>
+                                    <span className={`text-[8.5px] md:text-[9.5px] font-black uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${isActive ? 'text-[#3E2723]' : 'text-[#3E2723]/50 group-hover:text-[#C6A15B]'}`}>
+                                        {cat.ten_dm}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
-                    <button onClick={() => scrollCategories('right')} className="text-[#3E2723] hover:text-[#C6A15B] transition-colors md:block hidden"><span className="material-symbols-outlined font-bold text-xl">chevron_right</span></button>
+
+                    <button onClick={() => scrollCategories('right')} className="text-[#3E2723] hover:text-[#C6A15B] transition-colors md:block hidden">
+                        <span className="material-symbols-outlined font-bold text-lg">chevron_right</span>
+                    </button>
                 </div>
             </div>
 
