@@ -1,6 +1,8 @@
 <?php
 // API Routes - Laravel
 use Illuminate\Support\Facades\Route;
+
+// --- ADMIN CONTROLLERS ---
 use App\Http\Controllers\API\Admin\AdminProductController; 
 use App\Http\Controllers\API\Admin\AdminCategoryController; 
 use App\Http\Controllers\API\Admin\AdminCustomerController; 
@@ -9,18 +11,24 @@ use App\Http\Controllers\API\Admin\AdminFlashSaleController;
 use App\Http\Controllers\API\Admin\AdminCollectionController;
 use App\Http\Controllers\API\Admin\AdminInventoryController;
 use App\Http\Controllers\API\Admin\AdminProfileController;
-use App\Http\Controllers\API\Admin\ClientProductController;
 
-
+// --- CLIENT CONTROLLERS ---
 use App\Http\Controllers\API\Client\ClientHomeController;
+use App\Http\Controllers\API\Client\ClientProductController;
+
+
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
-// Client routes  
+// Client routes (Sanctum auth)
 Route::prefix('v1')->middleware('auth:sanctum')->group(base_path('routes/api/client.php'));
 
-// Admin routes
+// Admin routes (Sanctum auth + Role)
 Route::prefix('admin')->middleware(['auth:sanctum','role:admin'])->group(base_path('routes/api/admin.php'));
+
+// =====================================================================
+// 🔴 KHU VỰC QUẢN TRỊ (ADMIN)
+// =====================================================================
 
 // --- QUẢN LÝ SẢN PHẨM ---
 Route::get('/admin/products', [AdminProductController::class, 'index']);
@@ -47,10 +55,10 @@ Route::post('/admin/vouchers', [AdminVoucherController::class, 'store']);
 Route::put('/admin/vouchers/{id}', [AdminVoucherController::class, 'update']);
 Route::delete('/admin/vouchers/{id}', [AdminVoucherController::class, 'destroy']);
 
-// --- FLASH SALE ROUTES (ĐÃ SỬA LỖI 405) ---
-Route::get('/admin/flash-sales', [AdminFlashSaleController::class, 'index']); // <-- Sửa 'current' thành 'index'
+// --- FLASH SALE ---
+Route::get('/admin/flash-sales', [AdminFlashSaleController::class, 'index']); 
 Route::post('/admin/flash-sales', [AdminFlashSaleController::class, 'store']);
-Route::delete('/admin/flash-sales/{ma_fs}', [AdminFlashSaleController::class, 'destroy']); // API Hủy toàn bộ chiến dịch
+Route::delete('/admin/flash-sales/{ma_fs}', [AdminFlashSaleController::class, 'destroy']); 
 Route::get('/admin/flash-sales/{ma_fs}/items', [AdminFlashSaleController::class, 'getItems']);
 Route::get('/admin/flash-sales/{ma_fs}/available-variants', [AdminFlashSaleController::class, 'getAvailableVariants']);
 Route::post('/admin/flash-sales/{ma_fs}/items', [AdminFlashSaleController::class, 'addItem']);
@@ -60,26 +68,36 @@ Route::delete('/admin/flash-sales/{ma_fs}/items/{ma_bien_the}', [AdminFlashSaleC
 Route::get('/admin/collections', [AdminCollectionController::class, 'index']);
 Route::post('/admin/collections', [AdminCollectionController::class, 'store']);
 Route::delete('/admin/collections/{id}', [AdminCollectionController::class, 'destroy']);
-
-// Route cho Chi tiết Bộ sưu tập
 Route::get('/admin/collections/{id}/items', [AdminCollectionController::class, 'getItems']);
 Route::get('/admin/collections/{id}/available', [AdminCollectionController::class, 'getAvailableProducts']);
 Route::post('/admin/collections/{id}/items', [AdminCollectionController::class, 'addItem']);
 Route::delete('/admin/collections/{id}/items/{ma_sp}', [AdminCollectionController::class, 'removeItem']);
 Route::post('/admin/collections/{id}', [AdminCollectionController::class, 'update']);
 
-// --- QUẢN LÝ TỒN KHO ---
+// --- QUẢN LÝ TỒN KHO & PROFILE ---
 Route::get('/admin/inventory', [AdminInventoryController::class, 'index']);
 Route::put('/admin/inventory/{ma_sp}/stock', [AdminInventoryController::class, 'updateStock']);
-
 Route::get('/admin/profile', [AdminProfileController::class, 'getAdminInfo']);
 
-Route::get('/client/category/{ma_dm}', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getCategoryProducts']);
+
+// =====================================================================
+// 🟢 KHU VỰC NGƯỜI DÙNG BÊN NGOÀI (CLIENT)
+// =====================================================================
+
+// Lấy dữ liệu cho trang chủ (Flash sale, sản phẩm mới...)
 Route::get('/client/home-data', [ClientHomeController::class, 'getHomeData']);
 
-Route::get('/client/product/{id}', [App\Http\Controllers\API\Client\ClientProductController::class, 'getProductDetail']);
+// Lấy danh sách các Bộ Sưu Tập (API Đã Fix Lỗi)
+Route::get('/client/collections', [ClientHomeController::class, 'getCollections']);
 
-Route::get('/client/category/{ma_dm}', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getCategoryProducts']);
+// Lấy danh sách sản phẩm theo từng nhóm phân loại (Nam, Nữ, Phụ kiện)
+Route::get('/client/category/{prefix}', [ClientHomeController::class, 'getCategoryProducts']);
 
-// Route cho trang Shop tổng (Tất cả sản phẩm) và Tìm kiếm
-Route::get('/client/shop', [App\Http\Controllers\API\Client\ClientHomeController::class, 'getAllProducts']);
+// API Tổng để lọc toàn cửa hàng và Thanh Tìm Kiếm
+Route::get('/client/shop', [ClientHomeController::class, 'getAllProducts']);
+
+// Lấy chi tiết của 1 Sản phẩm khi khách bấm vào xem
+Route::get('/client/product/{id}', [ClientProductController::class, 'getProductDetail']);
+
+
+Route::get('/client/collections/{id}', [ClientHomeController::class, 'getCollectionDetail']);

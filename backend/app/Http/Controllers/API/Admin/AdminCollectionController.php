@@ -132,4 +132,8 @@ class AdminCollectionController extends Controller
         DB::table('chitiet_bst')->where('ma_bst', $ma_bst)->where('ma_sp', $ma_sp)->delete();
         return response()->json(['message' => 'Đã gỡ sản phẩm!']);
     }
+
+
+
+    
 }
