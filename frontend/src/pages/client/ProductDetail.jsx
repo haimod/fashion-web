@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const STORAGE_URL = import.meta.env.VITE_STORAGE_URL || 'http://127.0.0.1:8000/storage';
 const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
@@ -8,6 +9,8 @@ const STANDARD_SIZES = ['S', 'M', 'L', 'XL', 'FREESIZE'];
 
 export default function ProductDetail() {
     const { id } = useParams(); 
+    const navigate = useNavigate();
+    
     const [product, setProduct] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     
@@ -19,13 +22,16 @@ export default function ProductDetail() {
     const [currentPrice, setCurrentPrice] = useState(0);
     const [currentStock, setCurrentStock] = useState(null);
     const [showSizeGuide, setShowSizeGuide] = useState(false);
+    
+    const [selectedVariant, setSelectedVariant] = useState(null);
+    const [quantity, setQuantity] = useState(1);
 
-    // Kéo dữ liệu khi đổi sản phẩm
     useEffect(() => {
         setIsLoading(true);
         window.scrollTo(0, 0);
         setSelectedColor(null);
         setSelectedSize(null);
+        setSelectedVariant(null);
 
         fetch(`${API_BASE}/client/product/${id}`)
             .then(res => res.json())
@@ -41,7 +47,6 @@ export default function ProductDetail() {
             });
     }, [id]);
 
-    // Lắng nghe sự kiện khách chọn Màu và Size để nhảy Giá & Tồn kho
     useEffect(() => {
         if (product && product.variants && selectedColor && selectedSize) {
             const matchedVariant = product.variants.find(
@@ -50,13 +55,89 @@ export default function ProductDetail() {
             if (matchedVariant) {
                 setCurrentPrice(product.gia_flash || matchedVariant.gia_ban);
                 setCurrentStock(matchedVariant.so_luong_ton);
+                setSelectedVariant(matchedVariant);
             } else {
                 setCurrentStock(0);
+                setSelectedVariant(null);
             }
+        } else {
+            setSelectedVariant(null);
         }
     }, [selectedColor, selectedSize, product]);
 
     const formatPrice = (p) => Number(p).toLocaleString('vi-VN') + 'đ';
+
+    // --- HÀM 1: THÊM VÀO GIỎ HÀNG ---
+    const handleAddToCart = async () => {
+        if (!selectedVariant || !selectedVariant.ma_bien_the) {
+            toast.warning("Vui lòng chọn Kích thước và Màu sắc!", { position: 'bottom-right' });
+            return false;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.info("Vui lòng đăng nhập để mua hàng!", { position: 'bottom-right' });
+            navigate('/login');
+            return false;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/client/cart/add`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ 
+                    ma_bien_the: selectedVariant.ma_bien_the, 
+                    so_luong: quantity 
+                })
+            });
+
+            if (res.ok) {
+                toast.success("Đã thêm vào giỏ hàng!", { position: 'bottom-right', autoClose: 2000 });
+                return true;
+            } else {
+                const data = await res.json();
+                toast.error(`Lỗi: ${data.error || 'Có lỗi xảy ra'}`);
+                return false;
+            }
+        } catch (error) {
+            toast.error("Lỗi kết nối đến máy chủ!");
+            return false;
+        }
+    };
+
+    // --- HÀM 2: MUA NGAY (CHUYỂN THẲNG ĐẾN CHECKOUT) ---
+    const handleBuyNow = () => {
+        if (!selectedVariant || !selectedVariant.ma_bien_the) {
+            toast.warning("Vui lòng chọn Kích thước và Màu sắc!", { position: 'bottom-right' });
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.info("Vui lòng đăng nhập để mua hàng!", { position: 'bottom-right' });
+            navigate('/login');
+            return;
+        }
+
+        // Truyền thẳng dữ liệu món đồ qua state của React Router
+        navigate('/checkout', {
+            state: {
+                directItem: {
+                    ma_bien_the: selectedVariant.ma_bien_the,
+                    ten_sp: product.ten_sp,
+                    hinh_anh: product.hinh_anh,
+                    kich_thuoc: selectedVariant.kich_thuoc,
+                    mau_sac: selectedVariant.mau_sac,
+                    gia_ban: currentPrice,
+                    so_luong: quantity
+                }
+            }
+        });
+    };
 
     if (isLoading) return <div className="h-screen flex items-center justify-center font-black tracking-widest text-[#3E2723] animate-pulse">ĐANG TẢI...</div>;
     if (!product || product.error) return <div className="h-screen flex items-center justify-center font-black text-2xl">KHÔNG TÌM THẤY SẢN PHẨM</div>;
@@ -65,20 +146,16 @@ export default function ProductDetail() {
         <div className="bg-[#FDFBF9] text-[#3E2723] pt-20 pb-32 animate-fade-in relative">
             <div className="max-w-[1440px] mx-auto px-8 py-12 lg:grid lg:grid-cols-12 lg:gap-16 items-start">
                 
-                {/* --- BÊN TRÁI: BỘ SƯU TẬP ẢNH --- */}
+                {/* Cột trái: Ảnh sản phẩm */}
                 <div className="lg:col-span-7 space-y-4 sticky top-28">
                     <div className="w-full aspect-[4/5] overflow-hidden bg-[#F5F5F5]">
-                        <img 
-                            className="w-full h-full object-cover mix-blend-multiply transition-opacity duration-300" 
-                            src={`${STORAGE_URL}/${mainImage}`} 
-                            alt={product.ten_sp} 
-                        />
+                        <img className="w-full h-full object-cover mix-blend-multiply transition-opacity duration-300" src={`${STORAGE_URL}/${mainImage}`} alt={product.ten_sp} />
                     </div>
                     
                     <div className="flex gap-4 overflow-x-auto snap-x scrollbar-hide py-2">
                         <button 
                             onClick={() => setMainImage(product.hinh_anh)}
-                            className={`flex-shrink-0 w-20 h-24 snap-start transition-all ${mainImage === product.hinh_anh ? 'border-b-2 border-[#3E2723] opacity-100' : 'opacity-50 hover:opacity-100'}`}
+                            className={`cursor-pointer flex-shrink-0 w-20 h-24 snap-start transition-all ${mainImage === product.hinh_anh ? 'border-b-2 border-[#3E2723] opacity-100' : 'opacity-50 hover:opacity-100'}`}
                         >
                             <img className="w-full h-full object-cover mix-blend-multiply" src={`${STORAGE_URL}/${product.hinh_anh}`} alt="Thumbnail" />
                         </button>
@@ -86,7 +163,7 @@ export default function ProductDetail() {
                             <button 
                                 key={idx}
                                 onClick={() => setMainImage(img.duong_dan)}
-                                className={`flex-shrink-0 w-20 h-24 snap-start transition-all ${mainImage === img.duong_dan ? 'border-b-2 border-[#3E2723] opacity-100' : 'opacity-50 hover:opacity-100'}`}
+                                className={`cursor-pointer flex-shrink-0 w-20 h-24 snap-start transition-all ${mainImage === img.duong_dan ? 'border-b-2 border-[#3E2723] opacity-100' : 'opacity-50 hover:opacity-100'}`}
                             >
                                 <img className="w-full h-full object-cover mix-blend-multiply" src={`${STORAGE_URL}/${img.duong_dan}`} alt={`Gallery ${idx}`} />
                             </button>
@@ -94,13 +171,12 @@ export default function ProductDetail() {
                     </div>
                 </div>
 
-                {/* --- BÊN PHẢI: CHI TIẾT SẢN PHẨM --- */}
+                {/* Cột phải: Chi tiết sản phẩm */}
                 <div className="lg:col-span-5 sticky top-28 h-fit mt-12 lg:mt-0 max-h-[calc(100vh-7rem)] overflow-y-auto scrollbar-hide pr-2">
                     <div className="flex flex-col gap-8">
                         <div>
                             <p className="text-[11px] uppercase tracking-[0.2rem] text-[#C6A15B] font-bold mb-3">{product.ten_dm || 'Danh mục'}</p>
                             <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-none mb-4">{product.ten_sp}</h1>
-                            
                             <div className="flex items-center gap-3">
                                 {product.rating > 0 ? (
                                     <>
@@ -117,7 +193,6 @@ export default function ProductDetail() {
                             </div>
                         </div>
 
-                        {/* HIỂN THỊ GIÁ TIỀN & TỒN KHO */}
                         <div className="flex flex-col gap-2 border-b border-[#3E2723]/10 pb-6">
                             <div className="flex items-baseline gap-4">
                                 {product.gia_flash ? (
@@ -140,7 +215,7 @@ export default function ProductDetail() {
                         </div>
 
                         <div className="space-y-8">
-                            {/* NÚT CHỌN MÀU SẮC */}
+                            {/* Chọn Màu Sắc */}
                             {product.colors && product.colors.length > 0 && (
                                 <div>
                                     <p className="text-[11px] uppercase tracking-[0.15rem] font-bold mb-4">Màu sắc <span className="text-[#C6A15B] ml-2 opacity-80">{selectedColor || ''}</span></p>
@@ -149,7 +224,7 @@ export default function ProductDetail() {
                                             <button 
                                                 key={idx}
                                                 onClick={() => setSelectedColor(color.ten_mau)}
-                                                className={`px-6 py-2.5 border text-[11px] font-black uppercase tracking-[0.15rem] transition-all ${
+                                                className={`cursor-pointer px-6 py-2.5 border text-[11px] font-black uppercase tracking-[0.15rem] transition-all ${
                                                     selectedColor === color.ten_mau ? 'border-[#3E2723] bg-[#3E2723] text-[#FDFBF9]' : 'border-[#3E2723]/20 hover:border-[#3E2723]'
                                                 }`}
                                             >
@@ -160,13 +235,13 @@ export default function ProductDetail() {
                                 </div>
                             )}
 
-                            {/* NÚT CHỌN KÍCH THƯỚC */}
+                            {/* Chọn Kích Thước */}
                             <div>
                                 <div className="flex justify-between items-end mb-4">
                                     <p className="text-[11px] uppercase tracking-[0.15rem] font-bold">Kích thước <span className="text-[#C6A15B] ml-2 opacity-80">{selectedSize || ''}</span></p>
                                     <button 
                                         onClick={() => setShowSizeGuide(true)}
-                                        className="text-[10px] uppercase tracking-widest underline opacity-40 hover:text-[#C6A15B] hover:opacity-100 transition-all"
+                                        className="cursor-pointer text-[10px] uppercase tracking-widest underline opacity-40 hover:text-[#C6A15B] hover:opacity-100 transition-all"
                                     >
                                         HƯỚNG DẪN SIZE
                                     </button>
@@ -183,9 +258,9 @@ export default function ProductDetail() {
                                                 key={idx}
                                                 onClick={() => isAvailable && setSelectedSize(sizeName)}
                                                 disabled={!isAvailable}
-                                                className={`py-3.5 border text-[11px] font-black uppercase tracking-widest transition-all ${
+                                                className={`cursor-pointer disabled:cursor-not-allowed py-3.5 border text-[11px] font-black uppercase tracking-widest transition-all ${
                                                     !isAvailable 
-                                                        ? 'opacity-20 cursor-not-allowed border-[#3E2723]/20 bg-gray-50' 
+                                                        ? 'opacity-20 border-[#3E2723]/20 bg-gray-50' 
                                                         : selectedSize === sizeName 
                                                             ? 'border-[#3E2723] bg-[#3E2723] text-[#FDFBF9]' 
                                                             : 'border-[#3E2723]/20 hover:border-[#3E2723]'
@@ -199,16 +274,18 @@ export default function ProductDetail() {
                             </div>
                         </div>
 
-                        {/* NÚT MUA NGAY VÀ THÊM VÀO GIỎ */}
+                        {/* Các nút hành động */}
                         <div className="flex flex-col gap-3 pt-6 border-t border-[#3E2723]/10 mt-2">
                             <button 
-                                className="w-full py-5 bg-[#3E2723] text-[#FDFBF9] font-black uppercase tracking-[0.2rem] text-[12px] hover:bg-[#C6A15B] transition-colors disabled:opacity-50"
+                                onClick={handleBuyNow}
+                                className="cursor-pointer disabled:cursor-not-allowed w-full py-5 bg-[#3E2723] text-[#FDFBF9] font-black uppercase tracking-[0.2rem] text-[12px] hover:bg-[#C6A15B] transition-colors disabled:opacity-50"
                                 disabled={!selectedColor || !selectedSize || currentStock === 0}
                             >
                                 {(!selectedColor || !selectedSize) ? 'CHỌN PHÂN LOẠI HÀNG' : (currentStock === 0 ? 'HẾT HÀNG' : 'MUA NGAY')}
                             </button>
                             <button 
-                                className="w-full py-5 border-2 border-[#3E2723] text-[#3E2723] font-black uppercase tracking-[0.2rem] text-[12px] hover:bg-[#3E2723]/5 transition-all disabled:opacity-40"
+                                onClick={handleAddToCart}
+                                className="cursor-pointer disabled:cursor-not-allowed w-full py-5 border-2 border-[#3E2723] text-[#3E2723] font-black uppercase tracking-[0.2rem] text-[12px] hover:bg-[#3E2723]/5 transition-all disabled:opacity-40"
                                 disabled={!selectedColor || !selectedSize || currentStock === 0}
                             >
                                 THÊM VÀO GIỎ
@@ -229,11 +306,11 @@ export default function ProductDetail() {
                 </div>
             </div>
 
-            {/* --- SECTION TABS: MÔ TẢ & ĐÁNH GIÁ --- */}
+            {/* Tabs: Mô tả & Đánh giá */}
             <section className="max-w-[1440px] mx-auto px-8 mt-10 border-t border-[#3E2723]/10 pt-16">
                 <div className="border-b border-[#3E2723]/15 flex gap-12 overflow-x-auto no-scrollbar">
-                    <button onClick={() => setActiveTab('desc')} className={`pb-4 border-b-2 font-bold uppercase text-[12px] tracking-[0.2rem] whitespace-nowrap transition-colors ${activeTab === 'desc' ? 'border-[#3E2723] text-[#3E2723]' : 'border-transparent opacity-50 hover:opacity-100'}`}>Mô tả sản phẩm</button>
-                    <button onClick={() => setActiveTab('reviews')} className={`pb-4 border-b-2 font-bold uppercase text-[12px] tracking-[0.2rem] whitespace-nowrap transition-colors ${activeTab === 'reviews' ? 'border-[#3E2723] text-[#3E2723]' : 'border-transparent opacity-50 hover:opacity-100'}`}>Đánh giá {product.review_count ? `(${product.review_count})` : ''}</button>
+                    <button onClick={() => setActiveTab('desc')} className={`cursor-pointer pb-4 border-b-2 font-bold uppercase text-[12px] tracking-[0.2rem] whitespace-nowrap transition-colors ${activeTab === 'desc' ? 'border-[#3E2723] text-[#3E2723]' : 'border-transparent opacity-50 hover:opacity-100'}`}>Mô tả sản phẩm</button>
+                    <button onClick={() => setActiveTab('reviews')} className={`cursor-pointer pb-4 border-b-2 font-bold uppercase text-[12px] tracking-[0.2rem] whitespace-nowrap transition-colors ${activeTab === 'reviews' ? 'border-[#3E2723] text-[#3E2723]' : 'border-transparent opacity-50 hover:opacity-100'}`}>Đánh giá {product.review_count ? `(${product.review_count})` : ''}</button>
                 </div>
                 <div className="py-12">
                     {activeTab === 'desc' && <div className="max-w-3xl leading-relaxed text-sm md:text-base opacity-80" dangerouslySetInnerHTML={{ __html: product.mo_ta || '<p>Chưa có mô tả.</p>' }}></div>}
@@ -261,7 +338,7 @@ export default function ProductDetail() {
                 </div>
             </section>
 
-            {/* --- SECTION: SẢN PHẨM GỢI Ý CÙNG DANH MỤC --- */}
+            {/* Gợi ý cho bạn */}
             {product.related_products && product.related_products.length > 0 && (
                 <section className="max-w-[1440px] mx-auto px-8 mt-16 mb-20 border-t border-[#3E2723]/10 pt-16">
                     <div className="mb-10 flex justify-between items-end">
@@ -273,20 +350,16 @@ export default function ProductDetail() {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                         {product.related_products.map(item => (
-                            <Link to={`/shop/${item.ma_sp}`} key={item.ma_sp} className="group bg-white p-4 border border-[#3E2723]/5 shadow-sm hover:shadow-xl transition-shadow duration-500 block relative">
-                                {/* NHÃN SALE CHO ĐỀ XUẤT */}
+                            <Link to={`/shop/${item.ma_sp}`} key={item.ma_sp} className="cursor-pointer group bg-white p-4 border border-[#3E2723]/5 shadow-sm hover:shadow-xl transition-shadow duration-500 block relative">
                                 {item.gia_flash && (
                                     <div className="absolute top-6 left-6 z-10 bg-[#B71C1C] text-white px-2 py-1 text-[9px] font-black shadow-md uppercase tracking-widest">
                                         SALE
                                     </div>
                                 )}
-
                                 <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-[#F5F5F5]">
                                     <img className="w-full h-full object-cover mix-blend-multiply transition-transform duration-700 group-hover:scale-105" src={`${STORAGE_URL}/${item.hinh_anh}`} alt={item.ten_sp} />
                                 </div>
                                 <h4 className="text-xs font-black uppercase tracking-[0.15rem] leading-tight h-8 line-clamp-2 text-[#3E2723] mb-1">{item.ten_sp}</h4>
-                                
-                                {/* GIÁ TIỀN CHO ĐỀ XUẤT */}
                                 <div className="mt-2">
                                     {item.gia_flash ? (
                                         <div className="flex items-baseline gap-2">
@@ -303,27 +376,25 @@ export default function ProductDetail() {
                 </section>
             )}
 
-            {/* --- MODAL POPUP: BẢNG HƯỚNG DẪN SIZE --- */}
+            {/* Modal Bảng Hướng Dẫn Size */}
             {showSizeGuide && (
                 <div 
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A1C1C]/60 backdrop-blur-sm p-4 animate-fade-in"
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A1C1C]/60 backdrop-blur-sm p-4 animate-fade-in cursor-pointer"
                     onClick={() => setShowSizeGuide(false)}
                 >
                     <div 
-                        className="bg-[#FDFBF9] w-full max-w-2xl p-8 md:p-10 relative shadow-2xl animate-fade-in-up"
+                        className="cursor-default bg-[#FDFBF9] w-full max-w-2xl p-8 md:p-10 relative shadow-2xl animate-fade-in-up"
                         onClick={(e) => e.stopPropagation()} 
                     >
                         <button 
                             onClick={() => setShowSizeGuide(false)} 
-                            className="absolute top-5 right-5 text-[#3E2723]/60 hover:text-[#B71C1C] transition-colors"
+                            className="cursor-pointer absolute top-5 right-5 text-[#3E2723]/60 hover:text-[#B71C1C] transition-colors"
                         >
                             <span className="material-symbols-outlined text-3xl">close</span>
                         </button>
-
                         <h3 className="text-2xl font-black uppercase tracking-tighter text-[#3E2723] mb-8 text-center italic">
                             Bảng hướng dẫn Size
                         </h3>
-
                         <div className="overflow-x-auto">
                             <table className="w-full text-center text-sm border-collapse">
                                 <thead>
@@ -355,13 +426,6 @@ export default function ProductDetail() {
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        
-                        <div className="mt-8 pt-6 border-t border-[#3E2723]/10 flex items-start gap-3 opacity-60">
-                            <span className="material-symbols-outlined text-[18px] text-[#B71C1C]">info</span>
-                            <p className="text-[10px] italic leading-relaxed">
-                                * Bảng size trên chỉ mang tính chất tham khảo. Form dáng thực tế có thể thay đổi nhẹ tùy thuộc vào chất liệu và thiết kế của từng bộ sưu tập.
-                            </p>
                         </div>
                     </div>
                 </div>
