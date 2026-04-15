@@ -33,6 +33,7 @@ const OrderHistory  = lazy(() => import('../pages/client/OrderHistory'));
 const Profile       = lazy(() => import('../pages/client/Profile'));
 const Wishlist      = lazy(() => import('../pages/client/Wishlist'));
 const CollectionDetail = lazy(() => import('../pages/client/CollectionDetail'));
+const SalePage = lazy(() => import('../pages/client/SalePage'));
 
 // 🚨 THÊM DÒNG NÀY: Khai báo trang Tìm kiếm 🚨
 const SearchPage    = lazy(() => import('../pages/client/SearchPage'));
@@ -75,6 +76,8 @@ export default function AppRoutes() {
                     </Route>
                     
                     <Route path="/shop" element={<CollectionPage />} />
+                     <Route path='/sale' element={<SalePage />} />
+
                 </Route>
 
                 {/* 2. KHU VỰC ĐĂNG NHẬP / ĐĂNG KÝ */}
