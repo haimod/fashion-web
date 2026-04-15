@@ -17,12 +17,25 @@ use App\Http\Controllers\API\Client\ClientHomeController;
 use App\Http\Controllers\API\Client\ClientProductController;
 
 
+use App\Http\Controllers\API\Client\ClientProfileController;
+
 // Auth routes
 Route::prefix('auth')->group(base_path('routes/api/auth.php'));
 
 // Client routes (Sanctum auth)
-Route::prefix('v1')->middleware('auth:sanctum')->group(base_path('routes/api/client.php'));
-
+//Route::prefix('v1')->middleware('auth:sanctum')->group(base_path('routes/api/client.php'));
+Route::middleware('auth:sanctum')->group(function () {
+    // API lấy thông tin Profile
+    Route::get('/client/profile', [ClientProfileController::class, 'getProfile']);
+    // API Sổ địa chỉ
+    Route::get('/client/addresses', [ClientProfileController::class, 'getAddresses']);
+    Route::post('/client/addresses', [ClientProfileController::class, 'addAddress']);
+    // Cập nhật thông tin
+    Route::put('/client/profile', [ClientProfileController::class, 'updateProfile']);
+    // Sửa, xóa địa chỉ
+    Route::put('/client/addresses/{id}', [ClientProfileController::class, 'updateAddress']);
+    Route::delete('/client/addresses/{id}', [ClientProfileController::class, 'deleteAddress']);
+});
 // Admin routes (Sanctum auth + Role)
 Route::prefix('admin')->middleware(['auth:sanctum','role:admin'])->group(base_path('routes/api/admin.php'));
 
