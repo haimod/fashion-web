@@ -115,18 +115,22 @@ class ClientOrderController extends Controller
     /**
      * Lấy danh sách lịch sử đơn hàng của khách
      */
+   /**
+     * 1. Lấy danh sách đơn hàng của khách (CÓ PHÂN TRANG)
+     */
     public function getOrders(Request $request)
     {
         try {
             $user = $request->user();
-            
-            // Lấy tất cả đơn hàng của user, xếp mới nhất lên đầu
+            $perPage = $request->input('per_page', 5); // Khách hàng thì hiển thị 5 đơn 1 trang cho đẹp
+
+            // Lấy đơn hàng có phân trang
             $orders = DB::table('donhang')
                 ->where('ma_kh', $user->ma_kh)
                 ->orderBy('ngay_dat', 'desc')
-                ->get();
+                ->paginate($perPage);
 
-            // Kéo theo chi tiết từng món đồ trong mỗi đơn hàng
+            // Chạy vòng lặp để lấy chi tiết sản phẩm cho từng đơn
             foreach ($orders as $order) {
                 $order->items = DB::table('chitiet_dh')
                     ->join('bienthe_sp', 'chitiet_dh.ma_bien_the', '=', 'bienthe_sp.ma_bien_the')
@@ -144,6 +148,53 @@ class ClientOrderController extends Controller
             }
 
             return response()->json($orders, 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * 2. Khách hàng tự hủy đơn (Chỉ được hủy khi đang CHO_XAC_NHAN)
+     */
+    public function cancelOrder(Request $request, $ma_dh)
+    {
+        try {
+            $user = $request->user();
+
+            // Kiểm tra đơn hàng có phải của khách này không
+            $order = DB::table('donhang')
+                ->where('ma_dh', $ma_dh)
+                ->where('ma_kh', $user->ma_kh)
+                ->first();
+
+            if (!$order) {
+                return response()->json(['error' => 'Không tìm thấy đơn hàng!'], 404);
+            }
+
+            // Chốt chặn: Chỉ cho hủy khi đang Chờ xác nhận
+            if ($order->trang_thai !== 'CHO_XAC_NHAN') {
+                return response()->json(['error' => 'Không thể hủy! Đơn hàng đã được xử lý.'], 400);
+            }
+
+            // Đổi trạng thái thành DA_HUY
+            DB::table('donhang')->where('ma_dh', $ma_dh)->update(['trang_thai' => 'DA_HUY']);
+
+            // 🚨 QUAN TRỌNG: Hoàn lại số lượng tồn kho cho Shop
+            $items = DB::table('chitiet_dh')->where('ma_dh', $ma_dh)->get();
+            foreach ($items as $item) {
+                DB::table('bienthe_sp')
+                    ->where('ma_bien_the', $item->ma_bien_the)
+                    ->increment('so_luong_ton', $item->so_luong);
+            }
+
+            // Ghi lịch sử
+            DB::table('lichsu_donhang')->insert([
+                'ma_dh' => $ma_dh,
+                'trang_thai' => 'DA_HUY'
+            ]);
+
+            return response()->json(['message' => 'Đã hủy đơn hàng thành công!'], 200);
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
