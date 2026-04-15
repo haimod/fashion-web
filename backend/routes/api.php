@@ -11,6 +11,9 @@ use App\Http\Controllers\API\Admin\AdminFlashSaleController;
 use App\Http\Controllers\API\Admin\AdminCollectionController;
 use App\Http\Controllers\API\Admin\AdminInventoryController;
 use App\Http\Controllers\API\Admin\AdminProfileController;
+use App\Http\Controllers\API\Admin\AdminOrderController;
+use App\Http\Controllers\API\Admin\AdminDashboardController; // Thêm đúng dòng này sếp nhé!
+
 
 // --- CLIENT CONTROLLERS ---
 use App\Http\Controllers\API\Client\ClientHomeController;
@@ -46,14 +49,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/client/orders', [ClientOrderController::class, 'getOrders']);
     Route::post('/client/voucher/apply', [ClientCartController::class, 'applyVoucher']);
     Route::get('/client/orders/{ma_dh}', [ClientOrderController::class, 'getOrderDetail']);
+    Route::put('/client/orders/{ma_dh}/cancel', [ClientOrderController::class, 'cancelOrder']);
+
 });
 // Admin routes (Sanctum auth + Role)
 Route::prefix('admin')->middleware(['auth:sanctum','role:admin'])->group(base_path('routes/api/admin.php'));
-
 // =====================================================================
 // 🔴 KHU VỰC QUẢN TRỊ (ADMIN)
 // =====================================================================
-
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+Route::post('/admin/dashboard/flash-sale', [AdminDashboardController::class, 'quickCreateFlashSale']); // THÊM DÒNG NÀY
 // --- QUẢN LÝ SẢN PHẨM ---
 Route::get('/admin/products', [AdminProductController::class, 'index']);
 Route::post('/admin/products', [AdminProductController::class, 'store']);
@@ -102,7 +107,11 @@ Route::post('/admin/collections/{id}', [AdminCollectionController::class, 'updat
 Route::get('/admin/inventory', [AdminInventoryController::class, 'index']);
 Route::put('/admin/inventory/{ma_sp}/stock', [AdminInventoryController::class, 'updateStock']);
 Route::get('/admin/profile', [AdminProfileController::class, 'getAdminInfo']);
-
+//--- Quản lí đơn hàng
+Route::get('/admin/orders', [AdminOrderController::class, 'getOrders']);
+Route::get('/admin/orders/{ma_dh}', [AdminOrderController::class, 'getOrderDetail']);
+Route::put('/admin/orders/{ma_dh}/status', [AdminOrderController::class, 'updateOrderStatus']);
+Route::delete('/admin/orders/{ma_dh}', [AdminOrderController::class, 'deleteOrder']);
 
 // =====================================================================
 // 🟢 KHU VỰC NGƯỜI DÙNG BÊN NGOÀI (CLIENT)
